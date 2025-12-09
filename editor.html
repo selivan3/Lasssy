@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lasssy V2 - Semantic Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            overflow: hidden;
+        }
+
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+
+        #sidebar {
+            width: 320px;
+            background: #16213e;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-right: 1px solid #0f3460;
+            overflow-y: auto;
+        }
+
+        h1 {
+            font-size: 1.2em;
+            color: #e94560;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section {
+            background: #0f3460;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .section h3 {
+            font-size: 0.75em;
+            color: #888;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            width: 100%;
+            margin-bottom: 5px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #ff6b6b;
+            transform: scale(1.02);
+        }
+
+        .btn-secondary {
+            background: #0f3460;
+            border: 1px solid #e94560;
+        }
+
+        .btn-green {
+            background: #27ae60;
+        }
+
+        .btn-green:hover {
+            background: #2ecc71;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px 0;
+        }
+
+        .slider-row label {
+            flex: 1;
+            font-size: 0.8em;
+        }
+
+        .slider-row input[type="range"] {
+            width: 100px;
+        }
+
+        .slider-row .value {
+            width: 40px;
+            text-align: right;
+            font-size: 0.8em;
+            color: #e94560;
+        }
+
+        .class-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+        }
+
+        .class-row:hover {
+            transform: scale(1.02);
+        }
+
+        .class-row.target {
+            box-shadow: 0 0 0 2px #fff;
+        }
+
+        .class-row .count {
+            margin-left: auto;
+            font-size: 0.75em;
+            opacity: 0.7;
+        }
+
+        .class-2 {
+            background: #8B4513;
+        }
+
+        .class-3 {
+            background: #90EE90;
+            color: #000;
+        }
+
+        .class-4 {
+            background: #32CD32;
+        }
+
+        .class-5 {
+            background: #006400;
+        }
+
+        .class-6 {
+            background: #FF6347;
+        }
+
+        .class-7 {
+            background: #808080;
+        }
+
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            max-width: 300px;
+        }
+
+        #info .highlight {
+            color: #e94560;
+            font-weight: bold;
+        }
+
+        .mode-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 10px;
+        }
+
+        .mode-tab {
+            flex: 1;
+            padding: 8px;
+            background: #1a1a2e;
+            border: 1px solid #333;
+            color: #888;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75em;
+            text-align: center;
+        }
+
+        .mode-tab.active {
+            background: #e94560;
+            color: white;
+            border-color: #e94560;
+        }
+
+        .hotkeys {
+            font-size: 0.7em;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .hotkeys kbd {
+            background: #333;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        .progress {
+            display: none;
+            padding: 10px;
+            background: #0f3460;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .progress.show {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <div id="sidebar">
+            <h1>🎯 Lasssy V2 <span style="font-size:0.6em;color:#888">Semantic</span></h1>
+
+            <div class="section">
+                <h3>Файл</h3>
+                <input type="file" id="fileInput" class="file-input" accept=".xyz,.txt">
+                <button class="btn" onclick="document.getElementById('fileInput').click()">📂 Загрузить XYZ</button>
+            </div>
+
+            <div class="section">
+                <h3>Режим выделения</h3>
+                <div class="mode-tabs">
+                    <div class="mode-tab active" data-mode="semantic" onclick="setMode('semantic')">🧠 Семантика</div>
+                    <div class="mode-tab" data-mode="rect" onclick="setMode('rect')">🔲 Область</div>
+                    <div class="mode-tab" data-mode="class" onclick="setMode('class')">🎨 Класс</div>
+                </div>
+
+                <div id="semanticOptions">
+                    <div class="slider-row">
+                        <label>Радиус поиска</label>
+                        <input type="range" id="radius" min="0.5" max="5" step="0.5" value="2" oninput="updateSlider()">
+                        <span class="value" id="radiusVal">2</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Мин. точек</label>
+                        <input type="range" id="minPts" min="3" max="20" step="1" value="5" oninput="updateSlider()">
+                        <span class="value" id="minPtsVal">5</span>
+                    </div>
+                </div>
+
+                <div id="progress" class="progress">Сегментация... <span id="progressPct">0%</span></div>
+            </div>
+
+            <div class="section">
+                <h3>Целевой класс</h3>
+                <div id="classRows"></div>
+            </div>
+
+            <div class="section">
+                <h3>Действия</h3>
+                <button class="btn btn-green" onclick="applyClass()">✓ Применить класс (Enter)</button>
+                <button class="btn btn-secondary" onclick="clearSelection()">✕ Снять выделение</button>
+                <button class="btn btn-secondary" onclick="saveFile()">💾 Сохранить</button>
+            </div>
+
+            <div class="section">
+                <h3>Управление</h3>
+                <div class="hotkeys">
+                    <kbd>ЛКМ</kbd> Выделить сегмент/область<br>
+                    <kbd>ПКМ</kbd> Вращение<br>
+                    <kbd>2-7</kbd> Целевой класс<br>
+                    <kbd>Enter</kbd> Применить<br>
+                    <kbd>Esc</kbd> Снять выделение
+                </div>
+            </div>
+        </div>
+
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div id="info">
+                <div>Загрузите XYZ файл</div>
+                <div style="margin-top:8px;font-size:0.8em;color:#888">
+                    Режим <span class="highlight">Семантика</span>: клик на точку выделит связанный объект
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        let scene, camera, renderer, controls, raycaster, mouse;
+        let points = [], pointCloud = null, segments = [];
+        let selectedIndices = new Set();
+        let targetClass = 6, mode = 'semantic';
+        let centerOffset = { x: 0, y: 0 };
+
+        const classColors = {
+            1: 0xffffff, 2: 0x8B4513, 3: 0x90EE90,
+            4: 0x32CD32, 5: 0x006400, 6: 0xFF6347, 7: 0x808080
+        };
+        const classNames = { 2: 'Грунт', 3: 'Низкая', 4: 'Средняя', 5: 'Высокая', 6: 'Здания', 7: 'Шум' };
+
+        function init() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a2e);
+
+            camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 10000);
+            camera.position.set(50, 50, 50);
+
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+
+            raycaster = new THREE.Raycaster();
+            raycaster.params.Points.threshold = 1;
+            mouse = new THREE.Vector2();
+
+            scene.add(new THREE.AmbientLight(0xffffff));
+            scene.add(new THREE.GridHelper(200, 20, 0x444444, 0x333333));
+
+            window.addEventListener('resize', onResize);
+            document.getElementById('fileInput').addEventListener('change', loadFile);
+            document.getElementById('canvas').addEventListener('click', onClick);
+            document.addEventListener('keydown', onKeyDown);
+
+            renderClassRows();
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function onResize() {
+            const c = document.getElementById('canvas-container');
+            camera.aspect = c.clientWidth / c.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(c.clientWidth, c.clientHeight);
+        }
+
+        function loadFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                parsePoints(e.target.result);
+                document.getElementById('info').innerHTML = `
+                    <div><span class="highlight">${file.name}</span>: ${points.length.toLocaleString()} точек</div>
+                    <div style="margin-top:5px;font-size:0.8em">Кликните на объект для выделения</div>
+                `;
+            };
+            reader.readAsText(file);
+        }
+
+        function parsePoints(text) {
+            points = [];
+            const lines = text.trim().split('\n');
+            const sep = text.includes(',') ? ',' : /\s+/;
+
+            for (const line of lines) {
+                const p = line.trim().split(sep);
+                if (p.length >= 4) {
+                    points.push({
+                        class: parseInt(p[0]) || 1,
+                        x: parseFloat(p[1]), y: parseFloat(p[2]), z: parseFloat(p[3]),
+                        segment: -1
+                    });
+                }
+            }
+
+            // Центрирование
+            let cx = 0, cy = 0;
+            for (const p of points) { cx += p.x; cy += p.y; }
+            centerOffset.x = cx / points.length;
+            centerOffset.y = cy / points.length;
+
+            createPointCloud();
+            buildSegments();
+            renderClassRows();
+        }
+
+        function createPointCloud() {
+            if (pointCloud) scene.remove(pointCloud);
+
+            const geo = new THREE.BufferGeometry();
+            const pos = new Float32Array(points.length * 3);
+            const col = new Float32Array(points.length * 3);
+
+            for (let i = 0; i < points.length; i++) {
+                const p = points[i];
+                pos[i * 3] = p.x - centerOffset.x;
+                pos[i * 3 + 1] = p.z;
+                pos[i * 3 + 2] = p.y - centerOffset.y;
+
+                const c = new THREE.Color(classColors[p.class] || 0xffffff);
+                col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+            }
+
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+
+            pointCloud = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.5, vertexColors: true }));
+            scene.add(pointCloud);
+        }
+
+        // === СЕГМЕНТАЦИЯ (Region Growing) ===
+        function buildSegments() {
+            const radius = parseFloat(document.getElementById('radius').value);
+            const minPts = parseInt(document.getElementById('minPts').value);
+
+            showProgress(true);
+
+            // Построение пространственного индекса (простой grid)
+            const gridSize = radius * 2;
+            const grid = new Map();
+
+            for (let i = 0; i < points.length; i++) {
+                const p = points[i];
+                const key = `${Math.floor(p.x / gridSize)},${Math.floor(p.y / gridSize)},${Math.floor(p.z / gridSize)}`;
+                if (!grid.has(key)) grid.set(key, []);
+                grid.get(key).push(i);
+                points[i].segment = -1;
+            }
+
+            function getNeighbors(idx) {
+                const p = points[idx];
+                const neighbors = [];
+                const gx = Math.floor(p.x / gridSize);
+                const gy = Math.floor(p.y / gridSize);
+                const gz = Math.floor(p.z / gridSize);
+
+                for (let dx = -1; dx <= 1; dx++) {
+                    for (let dy = -1; dy <= 1; dy++) {
+                        for (let dz = -1; dz <= 1; dz++) {
+                            const key = `${gx + dx},${gy + dy},${gz + dz}`;
+                            const cell = grid.get(key);
+                            if (!cell) continue;
+
+                            for (const j of cell) {
+                                if (j === idx) continue;
+                                const q = points[j];
+                                const dist = Math.sqrt((p.x - q.x) ** 2 + (p.y - q.y) ** 2 + (p.z - q.z) ** 2);
+                                if (dist <= radius) neighbors.push(j);
+                            }
+                        }
+                    }
+                }
+                return neighbors;
+            }
+
+            // Region growing с учётом класса
+            let segmentId = 0;
+            segments = [];
+
+            for (let i = 0; i < points.length; i++) {
+                if (points[i].segment !== -1) continue;
+
+                const seedClass = points[i].class;
+                const queue = [i];
+                const segment = [];
+
+                while (queue.length > 0) {
+                    const curr = queue.pop();
+                    if (points[curr].segment !== -1) continue;
+                    if (points[curr].class !== seedClass) continue; // Только тот же класс
+
+                    points[curr].segment = segmentId;
+                    segment.push(curr);
+
+                    const neighbors = getNeighbors(curr);
+                    for (const n of neighbors) {
+                        if (points[n].segment === -1 && points[n].class === seedClass) {
+                            queue.push(n);
+                        }
+                    }
+                }
+
+                if (segment.length >= minPts) {
+                    segments.push(segment);
+                    segmentId++;
+                } else {
+                    // Слишком маленький сегмент - помечаем как шум
+                    for (const idx of segment) points[idx].segment = -2;
+                }
+            }
+
+            showProgress(false);
+            console.log(`Сегментация: ${segments.length} сегментов`);
+        }
+
+        function showProgress(show) {
+            document.getElementById('progress').classList.toggle('show', show);
+        }
+
+        function updateSlider() {
+            document.getElementById('radiusVal').textContent = document.getElementById('radius').value;
+            document.getElementById('minPtsVal').textContent = document.getElementById('minPts').value;
+            if (points.length > 0) buildSegments();
+        }
+
+        // === КЛИК И ВЫДЕЛЕНИЕ ===
+        function onClick(e) {
+            if (mode === 'semantic') {
+                selectSegmentAt(e);
+            }
+        }
+
+        function selectSegmentAt(e) {
+            if (!pointCloud) return;
+
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(pointCloud);
+
+            if (intersects.length > 0) {
+                const idx = intersects[0].index;
+                const segId = points[idx].segment;
+
+                if (segId >= 0 && segments[segId]) {
+                    // Добавляем к выделению (или заменяем если не Shift)
+                    if (!e.shiftKey) selectedIndices.clear();
+
+                    for (const i of segments[segId]) {
+                        selectedIndices.add(i);
+                    }
+
+                    updateColors();
+                    document.getElementById('info').innerHTML = `
+                        <div>Выделено: <span class="highlight">${selectedIndices.size.toLocaleString()}</span> точек</div>
+                        <div style="font-size:0.8em;margin-top:4px">Сегмент #${segId} (класс ${points[idx].class})</div>
+                        <div style="font-size:0.8em;color:#888">Shift+клик для добавления</div>
+                    `;
+                }
+            }
+        }
+
+        function updateColors() {
+            if (!pointCloud) return;
+            const cols = pointCloud.geometry.attributes.color.array;
+
+            for (let i = 0; i < points.length; i++) {
+                let c;
+                if (selectedIndices.has(i)) {
+                    c = new THREE.Color(0xffff00);
+                } else {
+                    c = new THREE.Color(classColors[points[i].class] || 0xffffff);
+                }
+                cols[i * 3] = c.r; cols[i * 3 + 1] = c.g; cols[i * 3 + 2] = c.b;
+            }
+            pointCloud.geometry.attributes.color.needsUpdate = true;
+        }
+
+        function setMode(m) {
+            mode = m;
+            document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === m));
+            document.getElementById('semanticOptions').style.display = m === 'semantic' ? 'block' : 'none';
+        }
+
+        function setTargetClass(cls) {
+            targetClass = cls;
+            renderClassRows();
+        }
+
+        function applyClass() {
+            if (selectedIndices.size === 0) return;
+
+            const count = selectedIndices.size;
+            for (const i of selectedIndices) points[i].class = targetClass;
+
+            selectedIndices.clear();
+            updateColors();
+            buildSegments(); // Пересегментация
+            renderClassRows();
+
+            document.getElementById('info').innerHTML = `
+                <div>✓ <span class="highlight">${count.toLocaleString()}</span> точек → ${classNames[targetClass]}</div>
+            `;
+        }
+
+        function clearSelection() {
+            selectedIndices.clear();
+            updateColors();
+        }
+
+        function renderClassRows() {
+            const counts = {};
+            for (const p of points) counts[p.class] = (counts[p.class] || 0) + 1;
+
+            let html = '';
+            for (const cls of [2, 3, 4, 5, 6, 7]) {
+                const sel = cls === targetClass ? 'target' : '';
+                html += `<div class="class-row class-${cls} ${sel}" onclick="setTargetClass(${cls})">
+                    <span>${cls}</span><span>${classNames[cls]}</span>
+                    <span class="count">${(counts[cls] || 0).toLocaleString()}</span>
+                </div>`;
+            }
+            document.getElementById('classRows').innerHTML = html;
+        }
+
+        function onKeyDown(e) {
+            if (e.key >= '2' && e.key <= '7') setTargetClass(parseInt(e.key));
+            else if (e.key === 'Enter') applyClass();
+            else if (e.key === 'Escape') clearSelection();
+        }
+
+        function saveFile() {
+            if (!points.length) return;
+            let content = '';
+            for (const p of points) content += `${p.class} ${p.x.toFixed(3)} ${p.y.toFixed(3)} ${p.z.toFixed(3)}\n`;
+
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([content]));
+            a.download = 'semantic_classified.xyz';
+            a.click();
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
