@@ -1,0 +1,23 @@
+# Большие бинарные файлы
+*.laz
+*.las
+*.zip
+
+# Временные файлы
+temp/
+*.tmp
+
+# Windows LAStools binaries (скачиваются отдельно)
+lastools_win/
+
+# Build артефакты
+build/
+bin64/
+*.o
+*.a
+
+# macOS
+.DS_Store
+
+# Wine
+.wine/
