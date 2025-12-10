@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lasssy V2 - Semantic Editor</title>
+    <title>Lasssy V4 - Editor</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background: #1a1a2e;
             color: #eee;
             overflow: hidden;
@@ -25,57 +25,47 @@
         }
 
         #sidebar {
-            width: 320px;
+            width: 300px;
             background: #16213e;
             padding: 15px;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            border-right: 1px solid #0f3460;
             overflow-y: auto;
         }
 
         h1 {
-            font-size: 1.2em;
+            font-size: 1.1em;
             color: #e94560;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .section {
             background: #0f3460;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 6px;
         }
 
         .section h3 {
-            font-size: 0.75em;
+            font-size: 0.7em;
             color: #888;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             text-transform: uppercase;
-        }
-
-        .file-input {
-            display: none;
         }
 
         .btn {
             background: #e94560;
             color: white;
             border: none;
-            padding: 10px 14px;
-            border-radius: 6px;
+            padding: 8px 12px;
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 0.85em;
+            font-size: 0.8em;
             width: 100%;
-            margin-bottom: 5px;
-            transition: all 0.2s;
+            margin-bottom: 4px;
         }
 
         .btn:hover {
             background: #ff6b6b;
-            transform: scale(1.02);
         }
 
         .btn-secondary {
@@ -87,46 +77,15 @@
             background: #27ae60;
         }
 
-        .btn-green:hover {
-            background: #2ecc71;
-        }
-
-        .slider-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 8px 0;
-        }
-
-        .slider-row label {
-            flex: 1;
-            font-size: 0.8em;
-        }
-
-        .slider-row input[type="range"] {
-            width: 100px;
-        }
-
-        .slider-row .value {
-            width: 40px;
-            text-align: right;
-            font-size: 0.8em;
-            color: #e94560;
-        }
-
         .class-row {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 10px;
-            border-radius: 6px;
+            gap: 6px;
+            padding: 6px 8px;
+            border-radius: 4px;
             cursor: pointer;
-            margin-bottom: 4px;
-            transition: all 0.2s;
-        }
-
-        .class-row:hover {
-            transform: scale(1.02);
+            margin-bottom: 3px;
+            font-size: 0.8em;
         }
 
         .class-row.target {
@@ -135,7 +94,7 @@
 
         .class-row .count {
             margin-left: auto;
-            font-size: 0.75em;
+            font-size: 0.7em;
             opacity: 0.7;
         }
 
@@ -167,71 +126,131 @@
         #canvas-container {
             flex: 1;
             position: relative;
-            cursor: crosshair;
         }
 
         #info {
             position: absolute;
             top: 10px;
             left: 10px;
-            background: rgba(0, 0, 0, 0.85);
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 0.85em;
-            max-width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            max-width: 280px;
         }
 
-        #info .highlight {
+        .highlight {
             color: #e94560;
             font-weight: bold;
         }
 
-        .mode-tabs {
+        .slider-row {
             display: flex;
-            gap: 4px;
-            margin-bottom: 10px;
-        }
-
-        .mode-tab {
-            flex: 1;
-            padding: 8px;
-            background: #1a1a2e;
-            border: 1px solid #333;
-            color: #888;
-            border-radius: 4px;
-            cursor: pointer;
+            align-items: center;
+            gap: 8px;
             font-size: 0.75em;
-            text-align: center;
+            margin: 5px 0;
         }
 
-        .mode-tab.active {
-            background: #e94560;
-            color: white;
-            border-color: #e94560;
+        .slider-row label {
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .slider-row input[type="range"] {
+            width: 70px;
+        }
+
+        .slider-row .val {
+            color: #e94560;
+            width: 35px;
+            text-align: right;
         }
 
         .hotkeys {
-            font-size: 0.7em;
+            font-size: 0.65em;
             color: #666;
-            line-height: 1.6;
+            line-height: 1.4;
         }
 
         .hotkeys kbd {
             background: #333;
-            padding: 2px 5px;
-            border-radius: 3px;
+            padding: 1px 4px;
+            border-radius: 2px;
         }
 
-        .progress {
+        .file-input {
             display: none;
-            padding: 10px;
-            background: #0f3460;
-            border-radius: 6px;
-            text-align: center;
         }
 
-        .progress.show {
+        select {
+            background: #16213e;
+            color: #eee;
+            border: 1px solid #e94560;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            width: 100%;
+        }
+
+        #display-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            min-width: 180px;
+        }
+
+        #display-panel h4 {
+            color: #e94560;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+        }
+
+        #perf-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding-top: 8px;
+            margin-top: 8px;
+            border-top: 1px solid #333;
+            color: #888;
+        }
+
+        #perf-toggle:hover {
+            color: #e94560;
+        }
+
+        #perf-content {
+            display: none;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #333;
+        }
+
+        #perf-content.show {
             display: block;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+        }
+
+        .stat span:last-child {
+            color: #e94560;
+        }
+
+        .algo-desc {
+            font-size: 0.65em;
+            color: #888;
+            margin-top: 5px;
+            font-style: italic;
         }
     </style>
 </head>
@@ -239,36 +258,69 @@
 <body>
     <div id="container">
         <div id="sidebar">
-            <h1>🎯 Lasssy V2 <span style="font-size:0.6em;color:#888">Semantic</span></h1>
+            <h1>🎯 Lasssy V4</h1>
 
             <div class="section">
                 <h3>Файл</h3>
                 <input type="file" id="fileInput" class="file-input" accept=".xyz,.txt">
-                <button class="btn" onclick="document.getElementById('fileInput').click()">📂 Загрузить XYZ</button>
+                <button class="btn" onclick="document.getElementById('fileInput').click()">📂 Загрузить</button>
             </div>
 
             <div class="section">
-                <h3>Режим выделения</h3>
-                <div class="mode-tabs">
-                    <div class="mode-tab active" data-mode="semantic" onclick="setMode('semantic')">🧠 Семантика</div>
-                    <div class="mode-tab" data-mode="rect" onclick="setMode('rect')">🔲 Область</div>
-                    <div class="mode-tab" data-mode="class" onclick="setMode('class')">🎨 Класс</div>
+                <h3>Сегментация</h3>
+                <div class="slider-row">
+                    <label>Алгоритм:</label>
+                    <select id="segAlgo" onchange="updateAlgo()">
+                        <option value="region">Region Growing</option>
+                        <option value="dbscan">DBSCAN</option>
+                        <option value="kmeans">K-means</option>
+                    </select>
                 </div>
+                <div id="algoDesc" class="algo-desc">Группирует соседние точки одного класса</div>
 
-                <div id="semanticOptions">
+                <div id="regionParams">
                     <div class="slider-row">
-                        <label>Радиус поиска</label>
-                        <input type="range" id="radius" min="0.5" max="5" step="0.5" value="2" oninput="updateSlider()">
-                        <span class="value" id="radiusVal">2</span>
+                        <label>Радиус:</label>
+                        <input type="range" id="segRadius" min="0.5" max="10" step="0.5" value="2"
+                            onchange="updateSegParams()">
+                        <span class="val" id="segRadiusVal">2</span>
                     </div>
                     <div class="slider-row">
-                        <label>Мин. точек</label>
-                        <input type="range" id="minPts" min="3" max="20" step="1" value="5" oninput="updateSlider()">
-                        <span class="value" id="minPtsVal">5</span>
+                        <label>Мин. точек:</label>
+                        <input type="range" id="segMinPts" min="2" max="50" step="1" value="5"
+                            onchange="updateSegParams()">
+                        <span class="val" id="segMinPtsVal">5</span>
                     </div>
                 </div>
 
-                <div id="progress" class="progress">Сегментация... <span id="progressPct">0%</span></div>
+                <div id="dbscanParams" style="display:none">
+                    <div class="slider-row">
+                        <label>Epsilon (ε):</label>
+                        <input type="range" id="dbEps" min="0.5" max="10" step="0.5" value="3"
+                            onchange="updateSegParams()">
+                        <span class="val" id="dbEpsVal">3</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Мин. точек:</label>
+                        <input type="range" id="dbMinPts" min="2" max="20" step="1" value="4"
+                            onchange="updateSegParams()">
+                        <span class="val" id="dbMinPtsVal">4</span>
+                    </div>
+                </div>
+
+                <div id="kmeansParams" style="display:none">
+                    <div class="slider-row">
+                        <label>Кластеров (K):</label>
+                        <input type="range" id="kmK" min="2" max="50" step="1" value="10" onchange="updateSegParams()">
+                        <span class="val" id="kmKVal">10</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Итераций:</label>
+                        <input type="range" id="kmIter" min="5" max="50" step="5" value="20"
+                            onchange="updateSegParams()">
+                        <span class="val" id="kmIterVal">20</span>
+                    </div>
+                </div>
             </div>
 
             <div class="section">
@@ -278,7 +330,7 @@
 
             <div class="section">
                 <h3>Действия</h3>
-                <button class="btn btn-green" onclick="applyClass()">✓ Применить класс (Enter)</button>
+                <button class="btn btn-green" onclick="applyClass()">✓ Применить (Enter)</button>
                 <button class="btn btn-secondary" onclick="clearSelection()">✕ Снять выделение</button>
                 <button class="btn btn-secondary" onclick="saveFile()">💾 Сохранить</button>
             </div>
@@ -286,21 +338,40 @@
             <div class="section">
                 <h3>Управление</h3>
                 <div class="hotkeys">
-                    <kbd>ЛКМ</kbd> Выделить сегмент/область<br>
-                    <kbd>ПКМ</kbd> Вращение<br>
-                    <kbd>2-7</kbd> Целевой класс<br>
-                    <kbd>Enter</kbd> Применить<br>
-                    <kbd>Esc</kbd> Снять выделение
+                    <kbd>ЛКМ</kbd> Выделить сегмент<br>
+                    <kbd>Shift+ЛКМ</kbd> Добавить<br>
+                    <kbd>2-7</kbd> Класс | <kbd>Enter</kbd> Применить
                 </div>
             </div>
         </div>
 
         <div id="canvas-container">
             <canvas id="canvas"></canvas>
-            <div id="info">
-                <div>Загрузите XYZ файл</div>
-                <div style="margin-top:8px;font-size:0.8em;color:#888">
-                    Режим <span class="highlight">Семантика</span>: клик на точку выделит связанный объект
+            <div id="info">Загрузите XYZ файл</div>
+
+            <div id="display-panel">
+                <h4>⚙️ Отображение</h4>
+                <div class="slider-row">
+                    <label>Макс. точек:</label>
+                    <input type="range" id="maxPoints" min="50000" max="500000" step="50000" value="200000"
+                        onchange="updateDisplay()">
+                    <span class="val" id="maxPtsVal">200K</span>
+                </div>
+                <div class="slider-row">
+                    <label>Размер:</label>
+                    <input type="range" id="pointSize" min="0.2" max="3" step="0.1" value="0.5"
+                        onchange="updatePointSize()">
+                    <span class="val" id="ptSizeVal">0.5</span>
+                </div>
+                <div id="perf-toggle" onclick="togglePerf()">
+                    <span>📊 Подробнее</span><span id="perf-arrow">▼</span>
+                </div>
+                <div id="perf-content">
+                    <div class="stat"><span>Всего:</span><span id="statTotal">-</span></div>
+                    <div class="stat"><span>Показано:</span><span id="statDisplay">-</span></div>
+                    <div class="stat"><span>Сегментов:</span><span id="statSegs">-</span></div>
+                    <div class="stat"><span>Сегментац.:</span><span id="statSeg">-</span></div>
+                    <div class="stat"><span>FPS:</span><span id="statFps">-</span></div>
                 </div>
             </div>
         </div>
@@ -311,43 +382,56 @@
 
     <script>
         let scene, camera, renderer, controls, raycaster, mouse;
-        let points = [], pointCloud = null, segments = [];
-        let selectedIndices = new Set();
-        let targetClass = 6, mode = 'semantic';
-        let centerOffset = { x: 0, y: 0 };
+        let allPoints = [], displayPoints = [], segments = [];
+        let pointCloud = null, selectedIndices = new Set();
+        let targetClass = 6, centerOffset = { x: 0, y: 0 };
+        let maxDisplayPoints = 200000;
+        let currentAlgo = 'region';
+        let lastTime = performance.now(), frameCount = 0;
 
-        const classColors = {
-            1: 0xffffff, 2: 0x8B4513, 3: 0x90EE90,
-            4: 0x32CD32, 5: 0x006400, 6: 0xFF6347, 7: 0x808080
-        };
+        const classColors = { 1: 0xffffff, 2: 0x8B4513, 3: 0x90EE90, 4: 0x32CD32, 5: 0x006400, 6: 0xFF6347, 7: 0x808080 };
         const classNames = { 2: 'Грунт', 3: 'Низкая', 4: 'Средняя', 5: 'Высокая', 6: 'Здания', 7: 'Шум' };
+        const algoDescs = {
+            region: 'Группирует соседние точки одного класса',
+            dbscan: 'Находит плотные области, шум автоматически',
+            kmeans: 'Делит на K равных кластеров по расстоянию'
+        };
+
+        function togglePerf() {
+            const c = document.getElementById('perf-content');
+            const a = document.getElementById('perf-arrow');
+            c.classList.toggle('show');
+            a.textContent = c.classList.contains('show') ? '▲' : '▼';
+        }
+
+        function updateAlgo() {
+            currentAlgo = document.getElementById('segAlgo').value;
+            document.getElementById('algoDesc').textContent = algoDescs[currentAlgo];
+            document.getElementById('regionParams').style.display = currentAlgo === 'region' ? 'block' : 'none';
+            document.getElementById('dbscanParams').style.display = currentAlgo === 'dbscan' ? 'block' : 'none';
+            document.getElementById('kmeansParams').style.display = currentAlgo === 'kmeans' ? 'block' : 'none';
+            if (allPoints.length > 0) rebuildSegments();
+        }
 
         function init() {
             const container = document.getElementById('canvas-container');
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x1a1a2e);
-
             camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 10000);
             camera.position.set(50, 50, 50);
-
-            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: false });
             renderer.setSize(container.clientWidth, container.clientHeight);
-
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
-
             raycaster = new THREE.Raycaster();
-            raycaster.params.Points.threshold = 1;
+            raycaster.params.Points.threshold = 1.5;
             mouse = new THREE.Vector2();
-
-            scene.add(new THREE.AmbientLight(0xffffff));
             scene.add(new THREE.GridHelper(200, 20, 0x444444, 0x333333));
-
             window.addEventListener('resize', onResize);
             document.getElementById('fileInput').addEventListener('change', loadFile);
             document.getElementById('canvas').addEventListener('click', onClick);
             document.addEventListener('keydown', onKeyDown);
-
             renderClassRows();
             animate();
         }
@@ -356,6 +440,13 @@
             requestAnimationFrame(animate);
             controls.update();
             renderer.render(scene, camera);
+            frameCount++;
+            const now = performance.now();
+            if (now - lastTime >= 1000) {
+                document.getElementById('statFps').textContent = frameCount;
+                frameCount = 0;
+                lastTime = now;
+            }
         }
 
         function onResize() {
@@ -365,109 +456,141 @@
             renderer.setSize(c.clientWidth, c.clientHeight);
         }
 
+        function updateSegParams() {
+            // Update value displays
+            document.getElementById('segRadiusVal').textContent = document.getElementById('segRadius').value;
+            document.getElementById('segMinPtsVal').textContent = document.getElementById('segMinPts').value;
+            document.getElementById('dbEpsVal').textContent = document.getElementById('dbEps').value;
+            document.getElementById('dbMinPtsVal').textContent = document.getElementById('dbMinPts').value;
+            document.getElementById('kmKVal').textContent = document.getElementById('kmK').value;
+            document.getElementById('kmIterVal').textContent = document.getElementById('kmIter').value;
+            if (allPoints.length > 0) rebuildSegments();
+        }
+
+        function updateDisplay() {
+            maxDisplayPoints = parseInt(document.getElementById('maxPoints').value);
+            document.getElementById('maxPtsVal').textContent = (maxDisplayPoints / 1000) + 'K';
+            if (allPoints.length > 0) createPointCloud();
+        }
+
+        function updatePointSize() {
+            const size = parseFloat(document.getElementById('pointSize').value);
+            document.getElementById('ptSizeVal').textContent = size;
+            if (pointCloud) pointCloud.material.size = size;
+        }
+
+        function rebuildSegments() {
+            if (allPoints.length === 0) return;
+            const start = performance.now();
+            buildSegments();
+            document.getElementById('statSeg').textContent = Math.round(performance.now() - start) + 'мс';
+            document.getElementById('statSegs').textContent = segments.length;
+        }
+
         function loadFile(e) {
             const file = e.target.files[0];
             if (!file) return;
+            document.getElementById('info').innerHTML = 'Загрузка...';
             const reader = new FileReader();
-            reader.onload = (e) => {
-                parsePoints(e.target.result);
-                document.getElementById('info').innerHTML = `
-                    <div><span class="highlight">${file.name}</span>: ${points.length.toLocaleString()} точек</div>
-                    <div style="margin-top:5px;font-size:0.8em">Кликните на объект для выделения</div>
-                `;
+            reader.onload = (ev) => {
+                parsePoints(ev.target.result);
+                const segStart = performance.now();
+                buildSegments();
+                document.getElementById('statSeg').textContent = Math.round(performance.now() - segStart) + 'мс';
+                document.getElementById('statTotal').textContent = allPoints.length.toLocaleString();
+                document.getElementById('statDisplay').textContent = displayPoints.length.toLocaleString();
+                document.getElementById('statSegs').textContent = segments.length;
+                document.getElementById('info').innerHTML = `<span class="highlight">${file.name}</span><br>${allPoints.length.toLocaleString()} точек`;
             };
             reader.readAsText(file);
         }
 
         function parsePoints(text) {
-            points = [];
+            allPoints = [];
             const lines = text.trim().split('\n');
             const sep = text.includes(',') ? ',' : /\s+/;
-
-            for (const line of lines) {
-                const p = line.trim().split(sep);
+            for (let i = 0; i < lines.length; i++) {
+                const p = lines[i].trim().split(sep);
                 if (p.length >= 4) {
-                    points.push({
-                        class: parseInt(p[0]) || 1,
-                        x: parseFloat(p[1]), y: parseFloat(p[2]), z: parseFloat(p[3]),
-                        segment: -1
-                    });
+                    allPoints.push({ idx: i, class: parseInt(p[0]) || 1, x: parseFloat(p[1]), y: parseFloat(p[2]), z: parseFloat(p[3]), segment: -1 });
                 }
             }
-
-            // Центрирование
             let cx = 0, cy = 0;
-            for (const p of points) { cx += p.x; cy += p.y; }
-            centerOffset.x = cx / points.length;
-            centerOffset.y = cy / points.length;
-
+            for (const p of allPoints) { cx += p.x; cy += p.y; }
+            centerOffset.x = cx / allPoints.length;
+            centerOffset.y = cy / allPoints.length;
             createPointCloud();
-            buildSegments();
             renderClassRows();
         }
 
         function createPointCloud() {
             if (pointCloud) scene.remove(pointCloud);
-
+            if (allPoints.length > maxDisplayPoints) {
+                const step = Math.ceil(allPoints.length / maxDisplayPoints);
+                displayPoints = allPoints.filter((_, i) => i % step === 0);
+            } else {
+                displayPoints = [...allPoints];
+            }
+            document.getElementById('statDisplay').textContent = displayPoints.length.toLocaleString();
             const geo = new THREE.BufferGeometry();
-            const pos = new Float32Array(points.length * 3);
-            const col = new Float32Array(points.length * 3);
-
-            for (let i = 0; i < points.length; i++) {
-                const p = points[i];
+            const pos = new Float32Array(displayPoints.length * 3);
+            const col = new Float32Array(displayPoints.length * 3);
+            for (let i = 0; i < displayPoints.length; i++) {
+                const p = displayPoints[i];
                 pos[i * 3] = p.x - centerOffset.x;
                 pos[i * 3 + 1] = p.z;
                 pos[i * 3 + 2] = p.y - centerOffset.y;
-
                 const c = new THREE.Color(classColors[p.class] || 0xffffff);
                 col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
             }
-
             geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
             geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-
-            pointCloud = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.5, vertexColors: true }));
+            const size = parseFloat(document.getElementById('pointSize').value);
+            pointCloud = new THREE.Points(geo, new THREE.PointsMaterial({ size, vertexColors: true, sizeAttenuation: true }));
             scene.add(pointCloud);
+            camera.position.set(50, 50, 50);
+            controls.target.set(0, 0, 0);
         }
 
-        // === СЕГМЕНТАЦИЯ (Region Growing) ===
+        // ===== SEGMENTATION ALGORITHMS =====
+
         function buildSegments() {
-            const radius = parseFloat(document.getElementById('radius').value);
-            const minPts = parseInt(document.getElementById('minPts').value);
+            switch (currentAlgo) {
+                case 'region': buildRegionGrowing(); break;
+                case 'dbscan': buildDBSCAN(); break;
+                case 'kmeans': buildKMeans(); break;
+            }
+        }
 
-            showProgress(true);
-
-            // Построение пространственного индекса (простой grid)
+        // Region Growing (original)
+        function buildRegionGrowing() {
+            const radius = parseFloat(document.getElementById('segRadius').value);
+            const minPts = parseInt(document.getElementById('segMinPts').value);
             const gridSize = radius * 2;
             const grid = new Map();
 
-            for (let i = 0; i < points.length; i++) {
-                const p = points[i];
+            for (let i = 0; i < allPoints.length; i++) {
+                const p = allPoints[i];
                 const key = `${Math.floor(p.x / gridSize)},${Math.floor(p.y / gridSize)},${Math.floor(p.z / gridSize)}`;
                 if (!grid.has(key)) grid.set(key, []);
                 grid.get(key).push(i);
-                points[i].segment = -1;
+                allPoints[i].segment = -1;
             }
 
             function getNeighbors(idx) {
-                const p = points[idx];
+                const p = allPoints[idx];
                 const neighbors = [];
-                const gx = Math.floor(p.x / gridSize);
-                const gy = Math.floor(p.y / gridSize);
-                const gz = Math.floor(p.z / gridSize);
-
+                const gx = Math.floor(p.x / gridSize), gy = Math.floor(p.y / gridSize), gz = Math.floor(p.z / gridSize);
                 for (let dx = -1; dx <= 1; dx++) {
                     for (let dy = -1; dy <= 1; dy++) {
                         for (let dz = -1; dz <= 1; dz++) {
-                            const key = `${gx + dx},${gy + dy},${gz + dz}`;
-                            const cell = grid.get(key);
+                            const cell = grid.get(`${gx + dx},${gy + dy},${gz + dz}`);
                             if (!cell) continue;
-
                             for (const j of cell) {
                                 if (j === idx) continue;
-                                const q = points[j];
-                                const dist = Math.sqrt((p.x - q.x) ** 2 + (p.y - q.y) ** 2 + (p.z - q.z) ** 2);
-                                if (dist <= radius) neighbors.push(j);
+                                const q = allPoints[j];
+                                const d = Math.sqrt((p.x - q.x) ** 2 + (p.y - q.y) ** 2 + (p.z - q.z) ** 2);
+                                if (d <= radius) neighbors.push(j);
                             }
                         }
                     }
@@ -475,91 +598,168 @@
                 return neighbors;
             }
 
-            // Region growing с учётом класса
-            let segmentId = 0;
+            let segId = 0;
             segments = [];
-
-            for (let i = 0; i < points.length; i++) {
-                if (points[i].segment !== -1) continue;
-
-                const seedClass = points[i].class;
-                const queue = [i];
-                const segment = [];
-
-                while (queue.length > 0) {
-                    const curr = queue.pop();
-                    if (points[curr].segment !== -1) continue;
-                    if (points[curr].class !== seedClass) continue; // Только тот же класс
-
-                    points[curr].segment = segmentId;
+            for (let i = 0; i < allPoints.length; i++) {
+                if (allPoints[i].segment !== -1) continue;
+                const seedClass = allPoints[i].class;
+                const stack = [i], segment = [];
+                while (stack.length > 0) {
+                    const curr = stack.pop();
+                    if (allPoints[curr].segment !== -1) continue;
+                    if (allPoints[curr].class !== seedClass) continue;
+                    allPoints[curr].segment = segId;
                     segment.push(curr);
+                    for (const n of getNeighbors(curr)) {
+                        if (allPoints[n].segment === -1 && allPoints[n].class === seedClass) stack.push(n);
+                    }
+                }
+                if (segment.length >= minPts) { segments.push(segment); segId++; }
+            }
+        }
 
-                    const neighbors = getNeighbors(curr);
-                    for (const n of neighbors) {
-                        if (points[n].segment === -1 && points[n].class === seedClass) {
-                            queue.push(n);
+        // DBSCAN
+        function buildDBSCAN() {
+            const eps = parseFloat(document.getElementById('dbEps').value);
+            const minPts = parseInt(document.getElementById('dbMinPts').value);
+            const gridSize = eps;
+            const grid = new Map();
+
+            for (let i = 0; i < allPoints.length; i++) {
+                const p = allPoints[i];
+                const key = `${Math.floor(p.x / gridSize)},${Math.floor(p.y / gridSize)},${Math.floor(p.z / gridSize)}`;
+                if (!grid.has(key)) grid.set(key, []);
+                grid.get(key).push(i);
+                allPoints[i].segment = -1;
+            }
+
+            function rangeQuery(idx) {
+                const p = allPoints[idx];
+                const neighbors = [];
+                const gx = Math.floor(p.x / gridSize), gy = Math.floor(p.y / gridSize), gz = Math.floor(p.z / gridSize);
+                for (let dx = -1; dx <= 1; dx++) {
+                    for (let dy = -1; dy <= 1; dy++) {
+                        for (let dz = -1; dz <= 1; dz++) {
+                            const cell = grid.get(`${gx + dx},${gy + dy},${gz + dz}`);
+                            if (!cell) continue;
+                            for (const j of cell) {
+                                const q = allPoints[j];
+                                const d = Math.sqrt((p.x - q.x) ** 2 + (p.y - q.y) ** 2 + (p.z - q.z) ** 2);
+                                if (d <= eps) neighbors.push(j);
+                            }
                         }
                     }
                 }
+                return neighbors;
+            }
 
-                if (segment.length >= minPts) {
-                    segments.push(segment);
-                    segmentId++;
-                } else {
-                    // Слишком маленький сегмент - помечаем как шум
-                    for (const idx of segment) points[idx].segment = -2;
+            let segId = 0;
+            segments = [];
+            const NOISE = -2;
+
+            for (let i = 0; i < allPoints.length; i++) {
+                if (allPoints[i].segment !== -1) continue;
+                const neighbors = rangeQuery(i);
+                if (neighbors.length < minPts) {
+                    allPoints[i].segment = NOISE;
+                    continue;
+                }
+                const segment = [];
+                allPoints[i].segment = segId;
+                segment.push(i);
+                const seeds = [...neighbors];
+
+                for (let j = 0; j < seeds.length; j++) {
+                    const q = seeds[j];
+                    if (allPoints[q].segment === NOISE) {
+                        allPoints[q].segment = segId;
+                        segment.push(q);
+                    }
+                    if (allPoints[q].segment !== -1) continue;
+                    allPoints[q].segment = segId;
+                    segment.push(q);
+                    const qNeighbors = rangeQuery(q);
+                    if (qNeighbors.length >= minPts) {
+                        seeds.push(...qNeighbors.filter(n => allPoints[n].segment === -1 || allPoints[n].segment === NOISE));
+                    }
+                }
+                segments.push(segment);
+                segId++;
+            }
+        }
+
+        // K-Means
+        function buildKMeans() {
+            const k = parseInt(document.getElementById('kmK').value);
+            const maxIter = parseInt(document.getElementById('kmIter').value);
+
+            // Reset segments
+            for (let i = 0; i < allPoints.length; i++) allPoints[i].segment = -1;
+
+            // Initialize centroids randomly
+            const centroids = [];
+            const used = new Set();
+            for (let i = 0; i < k; i++) {
+                let idx;
+                do { idx = Math.floor(Math.random() * allPoints.length); } while (used.has(idx));
+                used.add(idx);
+                centroids.push({ x: allPoints[idx].x, y: allPoints[idx].y, z: allPoints[idx].z });
+            }
+
+            // Iterate
+            for (let iter = 0; iter < maxIter; iter++) {
+                // Assign points to nearest centroid
+                for (let i = 0; i < allPoints.length; i++) {
+                    const p = allPoints[i];
+                    let minD = Infinity, minC = 0;
+                    for (let c = 0; c < k; c++) {
+                        const d = (p.x - centroids[c].x) ** 2 + (p.y - centroids[c].y) ** 2 + (p.z - centroids[c].z) ** 2;
+                        if (d < minD) { minD = d; minC = c; }
+                    }
+                    allPoints[i].segment = minC;
+                }
+
+                // Update centroids
+                const sums = Array(k).fill(null).map(() => ({ x: 0, y: 0, z: 0, count: 0 }));
+                for (const p of allPoints) {
+                    sums[p.segment].x += p.x;
+                    sums[p.segment].y += p.y;
+                    sums[p.segment].z += p.z;
+                    sums[p.segment].count++;
+                }
+                for (let c = 0; c < k; c++) {
+                    if (sums[c].count > 0) {
+                        centroids[c].x = sums[c].x / sums[c].count;
+                        centroids[c].y = sums[c].y / sums[c].count;
+                        centroids[c].z = sums[c].z / sums[c].count;
+                    }
                 }
             }
 
-            showProgress(false);
-            console.log(`Сегментация: ${segments.length} сегментов`);
-        }
-
-        function showProgress(show) {
-            document.getElementById('progress').classList.toggle('show', show);
-        }
-
-        function updateSlider() {
-            document.getElementById('radiusVal').textContent = document.getElementById('radius').value;
-            document.getElementById('minPtsVal').textContent = document.getElementById('minPts').value;
-            if (points.length > 0) buildSegments();
-        }
-
-        // === КЛИК И ВЫДЕЛЕНИЕ ===
-        function onClick(e) {
-            if (mode === 'semantic') {
-                selectSegmentAt(e);
+            // Build segments array
+            segments = Array(k).fill(null).map(() => []);
+            for (let i = 0; i < allPoints.length; i++) {
+                segments[allPoints[i].segment].push(i);
             }
+            segments = segments.filter(s => s.length > 0);
         }
 
-        function selectSegmentAt(e) {
+        function onClick(e) {
             if (!pointCloud) return;
-
             const rect = renderer.domElement.getBoundingClientRect();
             mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObject(pointCloud);
-
             if (intersects.length > 0) {
-                const idx = intersects[0].index;
-                const segId = points[idx].segment;
-
+                const displayIdx = intersects[0].index;
+                const realIdx = displayPoints[displayIdx].idx;
+                const segId = allPoints[realIdx].segment;
+                if (!e.shiftKey) selectedIndices.clear();
                 if (segId >= 0 && segments[segId]) {
-                    // Добавляем к выделению (или заменяем если не Shift)
-                    if (!e.shiftKey) selectedIndices.clear();
-
-                    for (const i of segments[segId]) {
-                        selectedIndices.add(i);
-                    }
-
+                    for (const i of segments[segId]) selectedIndices.add(i);
                     updateColors();
-                    document.getElementById('info').innerHTML = `
-                        <div>Выделено: <span class="highlight">${selectedIndices.size.toLocaleString()}</span> точек</div>
-                        <div style="font-size:0.8em;margin-top:4px">Сегмент #${segId} (класс ${points[idx].class})</div>
-                        <div style="font-size:0.8em;color:#888">Shift+клик для добавления</div>
-                    `;
+                    document.getElementById('info').innerHTML = `Выделено: <span class="highlight">${selectedIndices.size.toLocaleString()}</span><br>Сегмент #${segId}`;
                 }
             }
         }
@@ -567,83 +767,49 @@
         function updateColors() {
             if (!pointCloud) return;
             const cols = pointCloud.geometry.attributes.color.array;
-
-            for (let i = 0; i < points.length; i++) {
-                let c;
-                if (selectedIndices.has(i)) {
-                    c = new THREE.Color(0xffff00);
-                } else {
-                    c = new THREE.Color(classColors[points[i].class] || 0xffffff);
-                }
+            for (let i = 0; i < displayPoints.length; i++) {
+                const realIdx = displayPoints[i].idx;
+                const c = selectedIndices.has(realIdx) ? new THREE.Color(0xffff00) : new THREE.Color(classColors[allPoints[realIdx].class] || 0xffffff);
                 cols[i * 3] = c.r; cols[i * 3 + 1] = c.g; cols[i * 3 + 2] = c.b;
             }
             pointCloud.geometry.attributes.color.needsUpdate = true;
         }
 
-        function setMode(m) {
-            mode = m;
-            document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === m));
-            document.getElementById('semanticOptions').style.display = m === 'semantic' ? 'block' : 'none';
-        }
-
-        function setTargetClass(cls) {
-            targetClass = cls;
-            renderClassRows();
-        }
-
+        function setTargetClass(cls) { targetClass = cls; renderClassRows(); }
         function applyClass() {
             if (selectedIndices.size === 0) return;
-
             const count = selectedIndices.size;
-            for (const i of selectedIndices) points[i].class = targetClass;
-
+            for (const i of selectedIndices) allPoints[i].class = targetClass;
             selectedIndices.clear();
-            updateColors();
-            buildSegments(); // Пересегментация
+            rebuildSegments();
+            createPointCloud();
             renderClassRows();
-
-            document.getElementById('info').innerHTML = `
-                <div>✓ <span class="highlight">${count.toLocaleString()}</span> точек → ${classNames[targetClass]}</div>
-            `;
+            document.getElementById('info').innerHTML = `✓ ${count.toLocaleString()} → ${classNames[targetClass]}`;
         }
-
-        function clearSelection() {
-            selectedIndices.clear();
-            updateColors();
-        }
-
+        function clearSelection() { selectedIndices.clear(); updateColors(); document.getElementById('info').innerHTML = 'Снято'; }
         function renderClassRows() {
             const counts = {};
-            for (const p of points) counts[p.class] = (counts[p.class] || 0) + 1;
-
+            for (const p of allPoints) counts[p.class] = (counts[p.class] || 0) + 1;
             let html = '';
             for (const cls of [2, 3, 4, 5, 6, 7]) {
-                const sel = cls === targetClass ? 'target' : '';
-                html += `<div class="class-row class-${cls} ${sel}" onclick="setTargetClass(${cls})">
-                    <span>${cls}</span><span>${classNames[cls]}</span>
-                    <span class="count">${(counts[cls] || 0).toLocaleString()}</span>
-                </div>`;
+                html += `<div class="class-row class-${cls} ${cls === targetClass ? 'target' : ''}" onclick="setTargetClass(${cls})"><span>${cls}</span><span>${classNames[cls]}</span><span class="count">${(counts[cls] || 0).toLocaleString()}</span></div>`;
             }
             document.getElementById('classRows').innerHTML = html;
         }
-
         function onKeyDown(e) {
             if (e.key >= '2' && e.key <= '7') setTargetClass(parseInt(e.key));
             else if (e.key === 'Enter') applyClass();
             else if (e.key === 'Escape') clearSelection();
         }
-
         function saveFile() {
-            if (!points.length) return;
+            if (!allPoints.length) return;
             let content = '';
-            for (const p of points) content += `${p.class} ${p.x.toFixed(3)} ${p.y.toFixed(3)} ${p.z.toFixed(3)}\n`;
-
+            for (const p of allPoints) content += `${p.class} ${p.x.toFixed(3)} ${p.y.toFixed(3)} ${p.z.toFixed(3)}\n`;
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([content]));
-            a.download = 'semantic_classified.xyz';
+            a.download = 'edited_classified.xyz';
             a.click();
         }
-
         init();
     </script>
 </body>
