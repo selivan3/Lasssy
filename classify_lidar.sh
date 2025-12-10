@@ -65,9 +65,10 @@ classify_file() {
         -o "${TEMP_DIR}/${filename}_s5.laz" -demo
     
     run_lastool "lasheight64" -i "${TEMP_DIR}/${filename}_s5.laz" \
-        -classify_between 0 0.5 3 \
-        -classify_between 0.5 2 4 \
-        -classify_above 2 5 \
+        -classify_between 0.0 1.0 3 \
+        -classify_between 1.0 2.0 4 \
+        -classify_above 2.0 5 \
+        -ignore_class 2 -ignore_class 6 -ignore_class 7 \
         -o "${TEMP_DIR}/${filename}_s6.laz" -demo
     
     # Шаг 5: ПОСТ-ОБРАБОТКА - изолированные точки в воздухе → шум

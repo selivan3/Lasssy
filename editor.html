@@ -32,6 +32,7 @@
             flex-direction: column;
             gap: 10px;
             overflow-y: auto;
+            flex-shrink: 0;
         }
 
         h1 {
@@ -123,9 +124,21 @@
             background: #808080;
         }
 
+        #main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
         #canvas-container {
             flex: 1;
             position: relative;
+            min-height: 0;
+        }
+
+        #canvas {
+            display: block;
         }
 
         #info {
@@ -137,6 +150,7 @@
             border-radius: 6px;
             font-size: 0.8em;
             max-width: 280px;
+            z-index: 10;
         }
 
         .highlight {
@@ -154,17 +168,7 @@
 
         .slider-row label {
             flex: 1;
-            min-width: 80px;
-        }
-
-        .slider-row input[type="range"] {
-            width: 70px;
-        }
-
-        .slider-row .val {
-            color: #e94560;
-            width: 35px;
-            text-align: right;
+            min-width: 60px;
         }
 
         .hotkeys {
@@ -192,6 +196,7 @@
             border-radius: 6px;
             font-size: 0.75em;
             min-width: 180px;
+            z-index: 10;
         }
 
         #display-panel h4 {
@@ -200,40 +205,179 @@
             margin-bottom: 8px;
         }
 
-        #perf-toggle {
+        .toggle-group {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            padding-top: 8px;
-            margin-top: 8px;
-            border-top: 1px solid #333;
+            gap: 2px;
+            margin: 8px 0;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 6px 4px;
+            background: #16213e;
+            border: 1px solid #444;
             color: #888;
+            font-size: 0.7em;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
         }
 
-        #perf-toggle:hover {
-            color: #e94560;
+        .toggle-btn:first-child {
+            border-radius: 4px 0 0 4px;
         }
 
-        #perf-content {
+        .toggle-btn:last-child {
+            border-radius: 0 4px 4px 0;
+        }
+
+        .toggle-btn.active {
+            background: #e94560;
+            color: white;
+            border-color: #e94560;
+        }
+
+        /* Скальпель */
+        #scalpel-panel {
             display: none;
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #333;
+            height: 300px;
+            background: #0a0a15;
+            border-top: 2px solid #e94560;
+            flex-shrink: 0;
         }
 
-        #perf-content.show {
-            display: block;
+        #scalpel-panel.show {
+            display: flex;
         }
 
-        .stat {
+        .scalpel-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #333;
+        }
+
+        .scalpel-view:last-child {
+            border-right: none;
+        }
+
+        .scalpel-header {
+            background: #16213e;
+            padding: 4px 8px;
+            font-size: 0.75em;
+            color: #e94560;
+            text-align: center;
             display: flex;
             justify-content: space-between;
-            margin: 3px 0;
+            align-items: center;
         }
 
-        .stat span:last-child {
+        .scalpel-header span {
+            flex: 1;
+            text-align: center;
+        }
+
+        .scalpel-expand {
+            background: none;
+            border: 1px solid #e94560;
             color: #e94560;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .scalpel-expand:hover {
+            background: #e94560;
+            color: white;
+        }
+
+        .scalpel-canvas-wrap {
+            flex: 1;
+            position: relative;
+        }
+
+        .scalpel-canvas {
+            display: block;
+            background: #111;
+        }
+
+        /* Полноэкранный режим */
+        #fullscreen-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #0a0a15;
+            z-index: 1000;
+            flex-direction: column;
+        }
+
+        #fullscreen-overlay.show {
+            display: flex;
+        }
+
+        #fullscreen-header {
+            background: #16213e;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #fullscreen-header h3 {
+            color: #e94560;
+            margin: 0;
+        }
+
+        #fullscreen-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #fullscreen-controls button {
+            background: #0f3460;
+            border: 1px solid #e94560;
+            color: #e94560;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        #fullscreen-controls button:hover {
+            background: #e94560;
+            color: white;
+        }
+
+        #fullscreen-controls .zoom-info {
+            color: #888;
+            font-size: 0.8em;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        #fullscreen-close {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #fullscreen-canvas-wrap {
+            flex: 1;
+            position: relative;
+        }
+
+        #fullscreenCanvas {
+            display: block;
+            background: #111;
         }
     </style>
 </head>
@@ -250,32 +394,29 @@
             </div>
 
             <div class="section">
-                <h3>Сегментация (Region Growing)</h3>
-                <div class="slider-row">
-                    <label>Радиус:</label>
-                    <input type="range" id="segRadius" min="0.5" max="15" step="0.5" value="3"
-                        onchange="updateSegParams()">
-                    <span class="val" id="segRadiusVal">3</span>
+                <h3>Инструменты</h3>
+                <div class="toggle-group" id="toolToggle">
+                    <div class="toggle-btn active" onclick="setTool('segment')">Сегменты</div>
+                    <div class="toggle-btn" onclick="setTool('scalpel')">✂️ Скальпель</div>
                 </div>
+            </div>
+
+            <div class="section" id="segmentOptions">
+                <h3>Сегментация</h3>
+                <div style="font-size: 0.75em; margin-bottom: 4px;">Радиус: <span id="segRadiusVal"
+                        style="color:#e94560">3</span></div>
+                <input type="range" id="segRadius" min="0.25" max="15" step="0.25" value="3"
+                    style="width: 100%; margin-bottom: 8px;" onchange="updateSegParams()">
                 <div class="slider-row">
                     <label>Мин. точек:</label>
-                    <input type="range" id="segMinPts" min="1" max="100" step="1" value="3"
+                    <input type="number" id="segMinPts" min="1" max="1000" value="3"
+                        style="width: 60px; background: #16213e; color: #eee; border: 1px solid #444; padding: 4px; border-radius: 4px;"
                         onchange="updateSegParams()">
-                    <span class="val" id="segMinPtsVal">3</span>
                 </div>
-                <div class="slider-row">
-                    <label>По классу:</label>
-                    <input type="checkbox" id="segByClass" checked onchange="updateSegParams()">
-                </div>
-                <div class="slider-row">
-                    <label>Не ниже грунта:</label>
-                    <input type="checkbox" id="segStopGround" checked onchange="updateSegParams()">
-                </div>
-                <div class="slider-row">
-                    <label>Макс. ΔZ:</label>
-                    <input type="range" id="segMaxDZ" min="0.5" max="10" step="0.5" value="2"
-                        onchange="updateSegParams()">
-                    <span class="val" id="segMaxDZVal">2</span>
+                <div class="toggle-group" id="modeToggle">
+                    <div class="toggle-btn active" onclick="setSegMode('class')">По классу</div>
+                    <div class="toggle-btn" onclick="setSegMode('veg')">Растит.</div>
+                    <div class="toggle-btn" onclick="setSegMode('all')">Все</div>
                 </div>
             </div>
 
@@ -294,42 +435,74 @@
             <div class="section">
                 <h3>Управление</h3>
                 <div class="hotkeys">
-                    <kbd>ЛКМ</kbd> Выделить сегмент<br>
+                    <kbd>ЛКМ</kbd> Выделить<br>
                     <kbd>Shift+ЛКМ</kbd> Добавить<br>
-                    <kbd>2-7</kbd> Класс | <kbd>Enter</kbd> Применить
+                    <kbd>2-7</kbd> Класс | <kbd>S</kbd> Скальпель
                 </div>
             </div>
         </div>
 
-        <div id="canvas-container">
-            <canvas id="canvas"></canvas>
-            <div id="info">Загрузите XYZ файл</div>
-
-            <div id="display-panel">
-                <h4>⚙️ Отображение</h4>
-                <div class="slider-row">
-                    <label>Макс. точек:</label>
-                    <input type="range" id="maxPoints" min="50000" max="500000" step="50000" value="200000"
-                        onchange="updateDisplay()">
-                    <span class="val" id="maxPtsVal">200K</span>
-                </div>
-                <div class="slider-row">
-                    <label>Размер:</label>
-                    <input type="range" id="pointSize" min="0.2" max="3" step="0.1" value="0.5"
-                        onchange="updatePointSize()">
-                    <span class="val" id="ptSizeVal">0.5</span>
-                </div>
-                <div id="perf-toggle" onclick="togglePerf()">
-                    <span>📊 Подробнее</span><span id="perf-arrow">▼</span>
-                </div>
-                <div id="perf-content">
-                    <div class="stat"><span>Всего:</span><span id="statTotal">-</span></div>
-                    <div class="stat"><span>Показано:</span><span id="statDisplay">-</span></div>
-                    <div class="stat"><span>Сегментов:</span><span id="statSegs">-</span></div>
-                    <div class="stat"><span>Сегментац.:</span><span id="statSeg">-</span></div>
-                    <div class="stat"><span>FPS:</span><span id="statFps">-</span></div>
+        <div id="main-area">
+            <div id="canvas-container">
+                <canvas id="canvas"></canvas>
+                <div id="info">Загрузите XYZ файл</div>
+                <div id="display-panel">
+                    <h4>⚙️ Отображение</h4>
+                    <div class="slider-row">
+                        <label>Макс:</label>
+                        <input type="range" id="maxPoints" min="50000" max="500000" step="50000" value="200000"
+                            onchange="updateDisplay()">
+                        <span style="color:#e94560" id="maxPtsVal">200K</span>
+                    </div>
+                    <div class="slider-row">
+                        <label>Размер:</label>
+                        <input type="range" id="pointSize" min="0.2" max="3" step="0.1" value="0.5"
+                            onchange="updatePointSize()">
+                        <span style="color:#e94560" id="ptSizeVal">0.5</span>
+                    </div>
                 </div>
             </div>
+
+            <div id="scalpel-panel">
+                <div class="scalpel-view">
+                    <div class="scalpel-header">
+                        <span>⬆️ Сверху (XY)</span>
+                        <button class="scalpel-expand" onclick="openFullscreen('xy')">⛶</button>
+                    </div>
+                    <div class="scalpel-canvas-wrap"><canvas class="scalpel-canvas" id="scalpelTop"></canvas></div>
+                </div>
+                <div class="scalpel-view">
+                    <div class="scalpel-header">
+                        <span>➡️ Сбоку (ZY)</span>
+                        <button class="scalpel-expand" onclick="openFullscreen('zy')">⛶</button>
+                    </div>
+                    <div class="scalpel-canvas-wrap"><canvas class="scalpel-canvas" id="scalpelRight"></canvas></div>
+                </div>
+                <div class="scalpel-view">
+                    <div class="scalpel-header">
+                        <span>⬅️ Спереди (XZ)</span>
+                        <button class="scalpel-expand" onclick="openFullscreen('xz')">⛶</button>
+                    </div>
+                    <div class="scalpel-canvas-wrap"><canvas class="scalpel-canvas" id="scalpelFront"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Полноэкранный режим скальпеля -->
+    <div id="fullscreen-overlay">
+        <div id="fullscreen-header">
+            <h3 id="fullscreen-title">Вид</h3>
+            <div id="fullscreen-controls">
+                <button onclick="fsZoom(0.8)">➖ Уменьшить</button>
+                <span class="zoom-info" id="fsZoomInfo">100%</span>
+                <button onclick="fsZoom(1.25)">➕ Увеличить</button>
+                <button onclick="fsReset()">🔄 Показать всё</button>
+            </div>
+            <button id="fullscreen-close" onclick="closeFullscreen()">✕ Закрыть (Esc)</button>
+        </div>
+        <div id="fullscreen-canvas-wrap">
+            <canvas id="fullscreenCanvas"></canvas>
         </div>
     </div>
 
@@ -340,19 +513,48 @@
         let scene, camera, renderer, controls, raycaster, mouse;
         let allPoints = [], displayPoints = [], segments = [];
         let pointCloud = null, selectedIndices = new Set();
-        let targetClass = 6, centerOffset = { x: 0, y: 0 };
+        let targetClass = 6, centerOffset = { x: 0, y: 0, z: 0 };
         let maxDisplayPoints = 200000;
+        let segMode = 'class';
+        let currentTool = 'segment';
         let isFirstLoad = true;
-        let lastTime = performance.now(), frameCount = 0;
+        let bounds = { minX: 0, maxX: 0, minY: 0, maxY: 0, minZ: 0, maxZ: 0 };
+
+        // Скальпель
+        let scalpelActive = null;
+        let scalpelPath = [];
+        let fullscreenPlane = null;
+
+        // Полноэкранный зум и панорамирование
+        let fsZoomLevel = 1;
+        let fsPanX = 0, fsPanY = 0;
+        let fsIsPanning = false;
+        let fsPanStart = { x: 0, y: 0 };
 
         const classColors = { 1: 0xffffff, 2: 0x8B4513, 3: 0x90EE90, 4: 0x32CD32, 5: 0x006400, 6: 0xFF6347, 7: 0x808080 };
         const classNames = { 2: 'Грунт', 3: 'Низкая', 4: 'Средняя', 5: 'Высокая', 6: 'Здания', 7: 'Шум' };
+        const vegClasses = [3, 4, 5];
+        const planeNames = { 'xy': '⬆️ Сверху (XY)', 'zy': '➡️ Сбоку (ZY)', 'xz': '⬅️ Спереди (XZ)' };
 
-        function togglePerf() {
-            const c = document.getElementById('perf-content');
-            const a = document.getElementById('perf-arrow');
-            c.classList.toggle('show');
-            a.textContent = c.classList.contains('show') ? '▲' : '▼';
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('#toolToggle .toggle-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', (tool === 'segment' && i === 0) || (tool === 'scalpel' && i === 1));
+            });
+            document.getElementById('scalpel-panel').classList.toggle('show', tool === 'scalpel');
+            document.getElementById('segmentOptions').style.display = tool === 'segment' ? 'block' : 'none';
+            onResize();
+            if (tool === 'scalpel' && allPoints.length > 0) {
+                setTimeout(() => { drawAllScalpelViews(); }, 100);
+            }
+        }
+
+        function setSegMode(mode) {
+            segMode = mode;
+            document.querySelectorAll('#modeToggle .toggle-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', (mode === 'class' && i === 0) || (mode === 'veg' && i === 1) || (mode === 'all' && i === 2));
+            });
+            if (allPoints.length > 0) rebuildSegments();
         }
 
         function init() {
@@ -374,20 +576,211 @@
             document.getElementById('fileInput').addEventListener('change', loadFile);
             document.getElementById('canvas').addEventListener('click', onClick);
             document.addEventListener('keydown', onKeyDown);
+
+            // Скальпель события
+            initScalpelCanvas('scalpelTop', 'xy');
+            initScalpelCanvas('scalpelRight', 'zy');
+            initScalpelCanvas('scalpelFront', 'xz');
+
             renderClassRows();
             animate();
+        }
+
+        function initScalpelCanvas(id, plane) {
+            const canvas = document.getElementById(id);
+            canvas.dataset.plane = plane;
+
+            canvas.onmousedown = function (e) {
+                if (allPoints.length === 0) return;
+                scalpelActive = id;
+                scalpelPath = [];
+                addScalpelPoint(e, canvas);
+            };
+
+            canvas.onmousemove = function (e) {
+                if (scalpelActive !== id) return;
+                addScalpelPoint(e, canvas);
+                drawScalpelCanvas(canvas);
+            };
+
+            canvas.onmouseup = function (e) {
+                if (scalpelActive !== id) return;
+                finishScalpel(canvas, e.shiftKey);
+                scalpelActive = null;
+            };
+
+            canvas.onmouseleave = function (e) {
+                if (scalpelActive === id) {
+                    finishScalpel(canvas, e.shiftKey);
+                    scalpelActive = null;
+                }
+            };
+        }
+
+        function addScalpelPoint(e, canvas) {
+            const rect = canvas.getBoundingClientRect();
+            scalpelPath.push({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            });
+        }
+
+        function finishScalpel(canvas, addToSelection) {
+            if (scalpelPath.length < 3) {
+                drawAllScalpelViews();
+                return;
+            }
+
+            const plane = canvas.dataset.plane;
+            const w = canvas.width;
+            const h = canvas.height;
+            const padding = 10;
+
+            let rangeX, rangeY, minValX, minValY;
+            if (plane === 'xy') {
+                rangeX = bounds.maxX - bounds.minX || 1;
+                rangeY = bounds.maxY - bounds.minY || 1;
+                minValX = bounds.minX;
+                minValY = bounds.minY;
+            } else if (plane === 'zy') {
+                rangeX = bounds.maxZ - bounds.minZ || 1;
+                rangeY = bounds.maxY - bounds.minY || 1;
+                minValX = bounds.minZ;
+                minValY = bounds.minY;
+            } else {
+                rangeX = bounds.maxX - bounds.minX || 1;
+                rangeY = bounds.maxZ - bounds.minZ || 1;
+                minValX = bounds.minX;
+                minValY = bounds.minZ;
+            }
+
+            const scale = Math.min((w - 2 * padding) / rangeX, (h - 2 * padding) / rangeY);
+
+            if (!addToSelection) selectedIndices.clear();
+
+            for (let i = 0; i < allPoints.length; i++) {
+                const p = allPoints[i];
+                let valX, valY;
+                if (plane === 'xy') { valX = p.x; valY = p.y; }
+                else if (plane === 'zy') { valX = p.z; valY = p.y; }
+                else { valX = p.x; valY = p.z; }
+
+                const px = padding + (valX - minValX) * scale;
+                const py = h - padding - (valY - minValY) * scale;
+
+                if (pointInPolygon(px, py, scalpelPath)) {
+                    selectedIndices.add(i);
+                }
+            }
+
+            updateColors();
+            drawAllScalpelViews();
+            document.getElementById('info').innerHTML = `Скальпель: <span class="highlight">${selectedIndices.size.toLocaleString()}</span> точек`;
+        }
+
+        function pointInPolygon(x, y, poly) {
+            let inside = false;
+            for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+                const xi = poly[i].x, yi = poly[i].y;
+                const xj = poly[j].x, yj = poly[j].y;
+                if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+                    inside = !inside;
+                }
+            }
+            return inside;
+        }
+
+        function drawAllScalpelViews() {
+            drawScalpelCanvas(document.getElementById('scalpelTop'));
+            drawScalpelCanvas(document.getElementById('scalpelRight'));
+            drawScalpelCanvas(document.getElementById('scalpelFront'));
+        }
+
+        function drawScalpelCanvas(canvas) {
+            const wrap = canvas.parentElement;
+            const w = wrap.clientWidth;
+            const h = wrap.clientHeight;
+            if (w === 0 || h === 0) return;
+
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#111';
+            ctx.fillRect(0, 0, w, h);
+
+            if (allPoints.length === 0) return;
+
+            const plane = canvas.dataset.plane;
+            const padding = 10;
+
+            let rangeX, rangeY, minValX, minValY;
+            if (plane === 'xy') {
+                rangeX = bounds.maxX - bounds.minX || 1;
+                rangeY = bounds.maxY - bounds.minY || 1;
+                minValX = bounds.minX;
+                minValY = bounds.minY;
+            } else if (plane === 'zy') {
+                rangeX = bounds.maxZ - bounds.minZ || 1;
+                rangeY = bounds.maxY - bounds.minY || 1;
+                minValX = bounds.minZ;
+                minValY = bounds.minY;
+            } else {
+                rangeX = bounds.maxX - bounds.minX || 1;
+                rangeY = bounds.maxZ - bounds.minZ || 1;
+                minValX = bounds.minX;
+                minValY = bounds.minZ;
+            }
+
+            const scale = Math.min((w - 2 * padding) / rangeX, (h - 2 * padding) / rangeY);
+
+            // Рисуем точки (больше точек для лучшего разрешения)
+            const step = Math.max(1, Math.floor(allPoints.length / 30000));
+            for (let i = 0; i < allPoints.length; i += step) {
+                const p = allPoints[i];
+                let valX, valY;
+                if (plane === 'xy') { valX = p.x; valY = p.y; }
+                else if (plane === 'zy') { valX = p.z; valY = p.y; }
+                else { valX = p.x; valY = p.z; }
+
+                const px = padding + (valX - minValX) * scale;
+                const py = h - padding - (valY - minValY) * scale;
+
+                const color = classColors[p.class] || 0xffffff;
+                ctx.fillStyle = selectedIndices.has(i) ? '#ffff00' : '#' + color.toString(16).padStart(6, '0');
+                ctx.fillRect(px - 1, py - 1, 2, 2);
+            }
+
+            // Рисуем путь скальпеля
+            if (scalpelActive === canvas.id && scalpelPath.length > 1) {
+                ctx.strokeStyle = '#e94560';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(scalpelPath[0].x, scalpelPath[0].y);
+                for (let i = 1; i < scalpelPath.length; i++) {
+                    ctx.lineTo(scalpelPath[i].x, scalpelPath[i].y);
+                }
+                ctx.stroke();
+            }
+
+            // Подписи осей
+            ctx.fillStyle = '#666';
+            ctx.font = '10px sans-serif';
+            if (plane === 'xy') {
+                ctx.fillText('X →', w - 30, h - 5);
+                ctx.fillText('↑ Y', 5, 15);
+            } else if (plane === 'zy') {
+                ctx.fillText('Z →', w - 30, h - 5);
+                ctx.fillText('↑ Y', 5, 15);
+            } else {
+                ctx.fillText('X →', w - 30, h - 5);
+                ctx.fillText('↑ Z', 5, 15);
+            }
         }
 
         function animate() {
             requestAnimationFrame(animate);
             controls.update();
             renderer.render(scene, camera);
-            frameCount++;
-            if (performance.now() - lastTime >= 1000) {
-                document.getElementById('statFps').textContent = frameCount;
-                frameCount = 0;
-                lastTime = performance.now();
-            }
         }
 
         function onResize() {
@@ -395,11 +788,11 @@
             camera.aspect = c.clientWidth / c.clientHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(c.clientWidth, c.clientHeight);
+            if (currentTool === 'scalpel') drawAllScalpelViews();
         }
 
         function updateSegParams() {
             document.getElementById('segRadiusVal').textContent = document.getElementById('segRadius').value;
-            document.getElementById('segMinPtsVal').textContent = document.getElementById('segMinPts').value;
             if (allPoints.length > 0) rebuildSegments();
         }
 
@@ -417,10 +810,7 @@
 
         function rebuildSegments() {
             if (allPoints.length === 0) return;
-            const start = performance.now();
             buildSegments();
-            document.getElementById('statSeg').textContent = Math.round(performance.now() - start) + 'мс';
-            document.getElementById('statSegs').textContent = segments.length;
         }
 
         function loadFile(e) {
@@ -432,9 +822,8 @@
             reader.onload = (ev) => {
                 parsePoints(ev.target.result);
                 rebuildSegments();
-                document.getElementById('statTotal').textContent = allPoints.length.toLocaleString();
-                document.getElementById('statDisplay').textContent = displayPoints.length.toLocaleString();
                 document.getElementById('info').innerHTML = `<span class="highlight">${file.name}</span><br>${allPoints.length.toLocaleString()} точек`;
+                if (currentTool === 'scalpel') drawAllScalpelViews();
             };
             reader.readAsText(file);
         }
@@ -443,16 +832,23 @@
             allPoints = [];
             const lines = text.trim().split('\n');
             const sep = text.includes(',') ? ',' : /\s+/;
+            bounds = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity, minZ: Infinity, maxZ: -Infinity };
+
             for (let i = 0; i < lines.length; i++) {
                 const p = lines[i].trim().split(sep);
                 if (p.length >= 4) {
-                    allPoints.push({ idx: i, class: parseInt(p[0]) || 1, x: parseFloat(p[1]), y: parseFloat(p[2]), z: parseFloat(p[3]), segment: -1 });
+                    const pt = { idx: i, class: parseInt(p[0]) || 1, x: parseFloat(p[1]), y: parseFloat(p[2]), z: parseFloat(p[3]), segment: -1 };
+                    allPoints.push(pt);
+                    bounds.minX = Math.min(bounds.minX, pt.x); bounds.maxX = Math.max(bounds.maxX, pt.x);
+                    bounds.minY = Math.min(bounds.minY, pt.y); bounds.maxY = Math.max(bounds.maxY, pt.y);
+                    bounds.minZ = Math.min(bounds.minZ, pt.z); bounds.maxZ = Math.max(bounds.maxZ, pt.z);
                 }
             }
-            let cx = 0, cy = 0;
-            for (const p of allPoints) { cx += p.x; cy += p.y; }
-            centerOffset.x = cx / allPoints.length;
-            centerOffset.y = cy / allPoints.length;
+
+            centerOffset.x = (bounds.minX + bounds.maxX) / 2;
+            centerOffset.y = (bounds.minY + bounds.maxY) / 2;
+            centerOffset.z = (bounds.minZ + bounds.maxZ) / 2;
+
             createPointCloud(true);
             renderClassRows();
         }
@@ -465,7 +861,6 @@
             } else {
                 displayPoints = [...allPoints];
             }
-            document.getElementById('statDisplay').textContent = displayPoints.length.toLocaleString();
             const geo = new THREE.BufferGeometry();
             const pos = new Float32Array(displayPoints.length * 3);
             const col = new Float32Array(displayPoints.length * 3);
@@ -482,8 +877,6 @@
             const size = parseFloat(document.getElementById('pointSize').value);
             pointCloud = new THREE.Points(geo, new THREE.PointsMaterial({ size, vertexColors: true, sizeAttenuation: true }));
             scene.add(pointCloud);
-
-            // Сброс камеры только при первой загрузке
             if (resetCamera && isFirstLoad) {
                 camera.position.set(50, 50, 50);
                 controls.target.set(0, 0, 0);
@@ -491,18 +884,17 @@
             }
         }
 
-        // Улучшенный Region Growing
+        function classesMatch(c1, c2) {
+            if (segMode === 'all') return true;
+            if (segMode === 'veg') return (vegClasses.includes(c1) && vegClasses.includes(c2)) || c1 === c2;
+            return c1 === c2;
+        }
+
         function buildSegments() {
             const radius = parseFloat(document.getElementById('segRadius').value);
             const minPts = parseInt(document.getElementById('segMinPts').value);
-            const byClass = document.getElementById('segByClass').checked;
-            const stopGround = document.getElementById('segStopGround').checked;
-            const maxDZ = parseFloat(document.getElementById('segMaxDZ').value);
-            document.getElementById('segMaxDZVal').textContent = maxDZ;
             const gridSize = radius * 2;
             const grid = new Map();
-
-            // Построение пространственного индекса
             for (let i = 0; i < allPoints.length; i++) {
                 const p = allPoints[i];
                 const key = `${Math.floor(p.x / gridSize)},${Math.floor(p.y / gridSize)},${Math.floor(p.z / gridSize)}`;
@@ -510,7 +902,6 @@
                 grid.get(key).push(i);
                 allPoints[i].segment = -1;
             }
-
             function getNeighbors(idx) {
                 const p = allPoints[idx];
                 const neighbors = [];
@@ -531,90 +922,28 @@
                 }
                 return neighbors;
             }
-
-            // Находим высоту грунта (класс 2) для ограничения
-            let groundMinZ = -Infinity;
-            if (stopGround) {
-                const groundPoints = allPoints.filter(p => p.class === 2);
-                if (groundPoints.length > 0) {
-                    // Находим среднюю высоту грунта
-                    let sumZ = 0;
-                    for (const p of groundPoints) sumZ += p.z;
-                    groundMinZ = sumZ / groundPoints.length;
-                }
-            }
-
             let segId = 0;
             segments = [];
-
             for (let i = 0; i < allPoints.length; i++) {
                 if (allPoints[i].segment !== -1) continue;
-
-                const seed = allPoints[i];
-                const seedClass = seed.class;
-                const seedIsGround = seedClass === 2;
-                const stack = [i];
-                const segment = [];
-
+                const seedClass = allPoints[i].class;
+                const stack = [i], segment = [];
                 while (stack.length > 0) {
                     const curr = stack.pop();
                     if (allPoints[curr].segment !== -1) continue;
-
-                    const pt = allPoints[curr];
-                    const currClass = pt.class;
-
-                    // Если включена фильтрация по классу - проверяем
-                    if (byClass && currClass !== seedClass) continue;
-
-                    // Если включено "не ниже грунта" и начали НЕ с грунта:
-                    // - не переходим на грунт (класс 2)
-                    // - не берём точки ниже уровня грунта
-                    if (stopGround && !seedIsGround) {
-                        if (currClass === 2) continue;
-                        if (pt.z < groundMinZ - 0.5) continue; // 0.5m допуск
-                    }
-
+                    if (!classesMatch(seedClass, allPoints[curr].class)) continue;
                     allPoints[curr].segment = segId;
                     segment.push(curr);
-
-                    const neighbors = getNeighbors(curr);
-                    for (const n of neighbors) {
-                        if (allPoints[n].segment === -1) {
-                            const np = allPoints[n];
-                            const nClass = np.class;
-
-                            // Перепад высоты между текущей точкой и соседом
-                            const dz = Math.abs(pt.z - np.z);
-
-                            // Проверки для добавления соседа
-                            let canAdd = true;
-
-                            // Проверка класса
-                            if (byClass && nClass !== seedClass) canAdd = false;
-
-                            // Проверка грунта
-                            if (stopGround && !seedIsGround) {
-                                if (nClass === 2) canAdd = false;
-                                if (np.z < groundMinZ - 0.5) canAdd = false;
-                            }
-
-                            // Проверка перепада высоты
-                            if (dz > maxDZ) canAdd = false;
-
-                            if (canAdd) stack.push(n);
-                        }
+                    for (const n of getNeighbors(curr)) {
+                        if (allPoints[n].segment === -1 && classesMatch(seedClass, allPoints[n].class)) stack.push(n);
                     }
                 }
-
-                if (segment.length >= minPts) {
-                    segments.push(segment);
-                    segId++;
-                }
+                if (segment.length >= minPts) { segments.push(segment); segId++; }
             }
         }
 
         function onClick(e) {
-            if (!pointCloud) return;
+            if (!pointCloud || currentTool !== 'segment') return;
             const rect = renderer.domElement.getBoundingClientRect();
             mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -628,7 +957,7 @@
                 if (segId >= 0 && segments[segId]) {
                     for (const i of segments[segId]) selectedIndices.add(i);
                     updateColors();
-                    document.getElementById('info').innerHTML = `Выделено: <span class="highlight">${selectedIndices.size.toLocaleString()}</span><br>Сегмент #${segId} (${segments[segId].length} точек)`;
+                    document.getElementById('info').innerHTML = `Выделено: <span class="highlight">${selectedIndices.size.toLocaleString()}</span>`;
                 }
             }
         }
@@ -652,12 +981,18 @@
             for (const i of selectedIndices) allPoints[i].class = targetClass;
             selectedIndices.clear();
             rebuildSegments();
-            createPointCloud(false); // Не сбрасывать камеру!
+            createPointCloud(false);
             renderClassRows();
+            if (currentTool === 'scalpel') drawAllScalpelViews();
             document.getElementById('info').innerHTML = `✓ ${count.toLocaleString()} → ${classNames[targetClass]}`;
         }
 
-        function clearSelection() { selectedIndices.clear(); updateColors(); document.getElementById('info').innerHTML = 'Снято'; }
+        function clearSelection() {
+            selectedIndices.clear();
+            updateColors();
+            if (currentTool === 'scalpel') drawAllScalpelViews();
+            document.getElementById('info').innerHTML = 'Снято';
+        }
 
         function renderClassRows() {
             const counts = {};
@@ -673,6 +1008,9 @@
             if (e.key >= '2' && e.key <= '7') setTargetClass(parseInt(e.key));
             else if (e.key === 'Enter') applyClass();
             else if (e.key === 'Escape') clearSelection();
+            else if (e.key === 's' || e.key === 'S' || e.key === 'ы' || e.key === 'Ы') {
+                setTool(currentTool === 'scalpel' ? 'segment' : 'scalpel');
+            }
         }
 
         function saveFile() {
@@ -684,6 +1022,268 @@
             a.download = 'edited_classified.xyz';
             a.click();
         }
+        // ===== ПОЛНОЭКРАННЫЙ РЕЖИМ =====
+        function openFullscreen(plane) {
+            if (allPoints.length === 0) return;
+            fullscreenPlane = plane;
+            fsZoomLevel = 1;
+            fsPanX = 0;
+            fsPanY = 0;
+            updateFsZoomInfo();
+
+            document.getElementById('fullscreen-overlay').classList.add('show');
+            document.getElementById('fullscreen-title').textContent = planeNames[plane];
+
+            const canvas = document.getElementById('fullscreenCanvas');
+            canvas.dataset.plane = plane;
+            canvas.style.cursor = 'crosshair';
+
+            // События мыши
+            canvas.onmousedown = function (e) {
+                if (e.button === 1 || e.ctrlKey || e.altKey) {
+                    // Средняя кнопка или Ctrl/Alt - панорамирование
+                    fsIsPanning = true;
+                    fsPanStart = { x: e.clientX - fsPanX, y: e.clientY - fsPanY };
+                    canvas.style.cursor = 'grabbing';
+                } else {
+                    // Левая кнопка - рисование
+                    scalpelActive = 'fullscreenCanvas';
+                    scalpelPath = [];
+                    addFullscreenScalpelPoint(e, canvas);
+                }
+            };
+
+            canvas.onmousemove = function (e) {
+                if (fsIsPanning) {
+                    fsPanX = e.clientX - fsPanStart.x;
+                    fsPanY = e.clientY - fsPanStart.y;
+                    drawFullscreenCanvas();
+                } else if (scalpelActive === 'fullscreenCanvas') {
+                    addFullscreenScalpelPoint(e, canvas);
+                    drawFullscreenCanvas();
+                }
+            };
+
+            canvas.onmouseup = function (e) {
+                if (fsIsPanning) {
+                    fsIsPanning = false;
+                    canvas.style.cursor = 'crosshair';
+                } else if (scalpelActive === 'fullscreenCanvas') {
+                    finishFullscreenScalpel(canvas, e.shiftKey);
+                    scalpelActive = null;
+                }
+            };
+
+            canvas.onmouseleave = function () {
+                fsIsPanning = false;
+                canvas.style.cursor = 'crosshair';
+            };
+
+            // Зум колёсиком
+            canvas.onwheel = function (e) {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const mx = e.clientX - rect.left;
+                const my = e.clientY - rect.top;
+
+                const oldZoom = fsZoomLevel;
+                if (e.deltaY < 0) fsZoomLevel *= 1.15;
+                else fsZoomLevel /= 1.15;
+                fsZoomLevel = Math.max(0.1, Math.min(20, fsZoomLevel));
+
+                // Зум к позиции курсора
+                const factor = fsZoomLevel / oldZoom;
+                fsPanX = mx - (mx - fsPanX) * factor;
+                fsPanY = my - (my - fsPanY) * factor;
+
+                updateFsZoomInfo();
+                drawFullscreenCanvas();
+            };
+
+            setTimeout(drawFullscreenCanvas, 50);
+        }
+
+        function fsZoom(factor) {
+            fsZoomLevel *= factor;
+            fsZoomLevel = Math.max(0.1, Math.min(20, fsZoomLevel));
+            updateFsZoomInfo();
+            drawFullscreenCanvas();
+        }
+
+        function fsReset() {
+            fsZoomLevel = 1;
+            fsPanX = 0;
+            fsPanY = 0;
+            updateFsZoomInfo();
+            drawFullscreenCanvas();
+        }
+
+        function updateFsZoomInfo() {
+            document.getElementById('fsZoomInfo').textContent = Math.round(fsZoomLevel * 100) + '%';
+        }
+
+        function closeFullscreen() {
+            document.getElementById('fullscreen-overlay').classList.remove('show');
+            fullscreenPlane = null;
+            drawAllScalpelViews();
+        }
+
+        function addFullscreenScalpelPoint(e, canvas) {
+            const rect = canvas.getBoundingClientRect();
+            scalpelPath.push({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+        }
+
+        function finishFullscreenScalpel(canvas, addToSelection) {
+            if (scalpelPath.length < 3) {
+                drawFullscreenCanvas();
+                return;
+            }
+
+            const plane = fullscreenPlane;
+            const w = canvas.width;
+            const h = canvas.height;
+            const padding = 20;
+
+            let rangeX, rangeY, minValX, minValY;
+            if (plane === 'xy') {
+                rangeX = bounds.maxX - bounds.minX || 1;
+                rangeY = bounds.maxY - bounds.minY || 1;
+                minValX = bounds.minX; minValY = bounds.minY;
+            } else if (plane === 'zy') {
+                rangeX = bounds.maxZ - bounds.minZ || 1;
+                rangeY = bounds.maxY - bounds.minY || 1;
+                minValX = bounds.minZ; minValY = bounds.minY;
+            } else {
+                rangeX = bounds.maxX - bounds.minX || 1;
+                rangeY = bounds.maxZ - bounds.minZ || 1;
+                minValX = bounds.minX; minValY = bounds.minZ;
+            }
+
+            // Учитываем зум
+            const baseScale = Math.min((w - 2 * padding) / rangeX, (h - 2 * padding) / rangeY);
+            const scale = baseScale * fsZoomLevel;
+
+            if (!addToSelection) selectedIndices.clear();
+
+            for (let i = 0; i < allPoints.length; i++) {
+                const p = allPoints[i];
+                let valX, valY;
+                if (plane === 'xy') { valX = p.x; valY = p.y; }
+                else if (plane === 'zy') { valX = p.z; valY = p.y; }
+                else { valX = p.x; valY = p.z; }
+
+                // Применяем трансформации как в drawFullscreenCanvas
+                const px = fsPanX + padding + (valX - minValX) * scale;
+                const py = fsPanY + h - padding - (valY - minValY) * scale;
+
+                if (pointInPolygon(px, py, scalpelPath)) {
+                    selectedIndices.add(i);
+                }
+            }
+
+            updateColors();
+            drawFullscreenCanvas();
+            document.getElementById('info').innerHTML = `Скальпель: <span class="highlight">${selectedIndices.size.toLocaleString()}</span> точек`;
+        }
+
+        function drawFullscreenCanvas() {
+            const canvas = document.getElementById('fullscreenCanvas');
+            const wrap = document.getElementById('fullscreen-canvas-wrap');
+            const w = wrap.clientWidth;
+            const h = wrap.clientHeight;
+            if (w === 0 || h === 0) return;
+
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#0a0a15';
+            ctx.fillRect(0, 0, w, h);
+
+            if (allPoints.length === 0 || !fullscreenPlane) return;
+
+            const plane = fullscreenPlane;
+            const padding = 20;
+
+            let rangeX, rangeY, minValX, minValY;
+            if (plane === 'xy') {
+                rangeX = bounds.maxX - bounds.minX || 1;
+                rangeY = bounds.maxY - bounds.minY || 1;
+                minValX = bounds.minX; minValY = bounds.minY;
+            } else if (plane === 'zy') {
+                rangeX = bounds.maxZ - bounds.minZ || 1;
+                rangeY = bounds.maxY - bounds.minY || 1;
+                minValX = bounds.minZ; minValY = bounds.minY;
+            } else {
+                rangeX = bounds.maxX - bounds.minX || 1;
+                rangeY = bounds.maxZ - bounds.minZ || 1;
+                minValX = bounds.minX; minValY = bounds.minZ;
+            }
+
+            // Базовый масштаб + зум
+            const baseScale = Math.min((w - 2 * padding) / rangeX, (h - 2 * padding) / rangeY);
+            const scale = baseScale * fsZoomLevel;
+
+            // Размер точки зависит от зума
+            const ptSize = Math.max(1, Math.min(4, 2 * fsZoomLevel));
+
+            // Рисуем все точки с высоким разрешением
+            for (let i = 0; i < allPoints.length; i++) {
+                const p = allPoints[i];
+                let valX, valY;
+                if (plane === 'xy') { valX = p.x; valY = p.y; }
+                else if (plane === 'zy') { valX = p.z; valY = p.y; }
+                else { valX = p.x; valY = p.z; }
+
+                // Применяем трансформации: масштаб + сдвиг
+                const px = fsPanX + padding + (valX - minValX) * scale;
+                const py = fsPanY + h - padding - (valY - minValY) * scale;
+
+                // Не рисуем точки за пределами экрана
+                if (px < -ptSize || px > w + ptSize || py < -ptSize || py > h + ptSize) continue;
+
+                const color = classColors[p.class] || 0xffffff;
+                ctx.fillStyle = selectedIndices.has(i) ? '#ffff00' : '#' + color.toString(16).padStart(6, '0');
+                ctx.fillRect(px - ptSize / 2, py - ptSize / 2, ptSize, ptSize);
+            }
+
+            // Путь скальпеля
+            if (scalpelActive === 'fullscreenCanvas' && scalpelPath.length > 1) {
+                ctx.strokeStyle = '#e94560';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(scalpelPath[0].x, scalpelPath[0].y);
+                for (let i = 1; i < scalpelPath.length; i++) {
+                    ctx.lineTo(scalpelPath[i].x, scalpelPath[i].y);
+                }
+                ctx.stroke();
+            }
+
+            // Подписи осей (фиксированные)
+            ctx.fillStyle = '#888';
+            ctx.font = '14px sans-serif';
+            if (plane === 'xy') {
+                ctx.fillText('X →', w - 40, h - 10);
+                ctx.fillText('↑ Y', 10, 20);
+            } else if (plane === 'zy') {
+                ctx.fillText('Z →', w - 40, h - 10);
+                ctx.fillText('↑ Y', 10, 20);
+            } else {
+                ctx.fillText('X →', w - 40, h - 10);
+                ctx.fillText('↑ Z', 10, 20);
+            }
+
+            // Подсказка управления
+            ctx.fillStyle = '#555';
+            ctx.font = '11px sans-serif';
+            ctx.fillText('🖱️ Рисовать | Ctrl+🖱️ Двигать | Колёсико: Зум', 10, h - 10);
+        }
+
+        // Закрытие по Escape
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && fullscreenPlane) {
+                closeFullscreen();
+            }
+        });
 
         init();
     </script>
