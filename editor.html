@@ -417,6 +417,8 @@
                     <div class="toggle-btn active" onclick="setSegMode('class')">По классу</div>
                     <div class="toggle-btn" onclick="setSegMode('veg')">Растит.</div>
                     <div class="toggle-btn" onclick="setSegMode('all')">Все</div>
+                    <div class="toggle-btn" onclick="setSegMode('cluster')">Кучки</div>
+                    <div class="toggle-btn" onclick="setSegMode('vground')">Верт.грунт</div>
                 </div>
             </div>
 
@@ -552,7 +554,7 @@
         function setSegMode(mode) {
             segMode = mode;
             document.querySelectorAll('#modeToggle .toggle-btn').forEach((btn, i) => {
-                btn.classList.toggle('active', (mode === 'class' && i === 0) || (mode === 'veg' && i === 1) || (mode === 'all' && i === 2));
+                btn.classList.toggle('active', (mode === 'class' && i === 0) || (mode === 'veg' && i === 1) || (mode === 'all' && i === 2) || (mode === 'cluster' && i === 3) || (mode === 'vground' && i === 4));
             });
             if (allPoints.length > 0) rebuildSegments();
         }
@@ -886,6 +888,8 @@
 
         function classesMatch(c1, c2) {
             if (segMode === 'all') return true;
+            if (segMode === 'cluster') return true; // По кучкам - только пространственная близость
+            if (segMode === 'vground') return c1 === 2 && c2 === 2; // Только грунт (класс 2)
             if (segMode === 'veg') return (vegClasses.includes(c1) && vegClasses.includes(c2)) || c1 === c2;
             return c1 === c2;
         }
@@ -922,23 +926,97 @@
                 }
                 return neighbors;
             }
-            let segId = 0;
-            segments = [];
-            for (let i = 0; i < allPoints.length; i++) {
-                if (allPoints[i].segment !== -1) continue;
-                const seedClass = allPoints[i].class;
-                const stack = [i], segment = [];
-                while (stack.length > 0) {
-                    const curr = stack.pop();
-                    if (allPoints[curr].segment !== -1) continue;
-                    if (!classesMatch(seedClass, allPoints[curr].class)) continue;
-                    allPoints[curr].segment = segId;
-                    segment.push(curr);
-                    for (const n of getNeighbors(curr)) {
-                        if (allPoints[n].segment === -1 && classesMatch(seedClass, allPoints[n].class)) stack.push(n);
+
+            // Для режима vground - проверяем вертикальную структуру грунта
+            function isVerticalGround(idx) {
+                if (allPoints[idx].class !== 2) return false; // Только грунт
+                const p = allPoints[idx];
+                const xyRadius = 1.5;
+                let pointsAbove = 0;
+                let horizontalGroundNeighbors = 0; // Горизонтальные соседи-грунт
+                let diagonalGroundBelow = 0; // Г-образный стык
+
+                // Проходим по всем точкам
+                for (let i = 0; i < allPoints.length; i++) {
+                    if (i === idx) continue;
+                    const q = allPoints[i];
+                    const xyDist = Math.sqrt((p.x - q.x) ** 2 + (p.y - q.y) ** 2);
+                    const zDiff = q.z - p.z;
+
+                    if (xyDist <= xyRadius) {
+                        // Точки ВЫШЕ (вертикальная структура)
+                        if (zDiff > 0.5) {
+                            pointsAbove++;
+                        }
+                        // Точки НА ТОМ ЖЕ УРОВНЕ (горизонтальная поверхность)
+                        else if (Math.abs(zDiff) <= 0.5 && q.class === 2) {
+                            horizontalGroundNeighbors++;
+                        }
+                        // Точки НИЖЕ И В СТОРОНЕ (Г-образный стык)
+                        else if (zDiff < -0.5 && zDiff > -3 && q.class === 2) {
+                            diagonalGroundBelow++;
+                        }
                     }
                 }
-                if (segment.length >= minPts) { segments.push(segment); segId++; }
+
+                // Если много горизонтальных соседей - это часть поверхности, не вертикальная структура
+                if (horizontalGroundNeighbors >= 5) return false;
+
+                // Если есть Г-образный стык (грунт ниже и в стороне) - это переход, не чистая вертикаль
+                if (diagonalGroundBelow >= 3) return false;
+
+                // Должно быть достаточно точек выше для вертикальной структуры
+                return pointsAbove >= 3;
+            }
+
+            let segId = 0;
+            segments = [];
+
+            // Для режима vground - особая логика
+            if (segMode === 'vground') {
+                // Находим все вертикальные грунтовые точки
+                const verticalGroundPoints = [];
+                for (let i = 0; i < allPoints.length; i++) {
+                    if (isVerticalGround(i)) {
+                        verticalGroundPoints.push(i);
+                    }
+                }
+                // Группируем их в сегменты по близости
+                for (const i of verticalGroundPoints) {
+                    if (allPoints[i].segment !== -1) continue;
+                    const stack = [i], segment = [];
+                    while (stack.length > 0) {
+                        const curr = stack.pop();
+                        if (allPoints[curr].segment !== -1) continue;
+                        if (!verticalGroundPoints.includes(curr)) continue;
+                        allPoints[curr].segment = segId;
+                        segment.push(curr);
+                        for (const n of getNeighbors(curr)) {
+                            if (allPoints[n].segment === -1 && verticalGroundPoints.includes(n)) {
+                                stack.push(n);
+                            }
+                        }
+                    }
+                    if (segment.length >= minPts) { segments.push(segment); segId++; }
+                }
+            } else {
+                // Стандартная логика для остальных режимов
+                for (let i = 0; i < allPoints.length; i++) {
+                    if (allPoints[i].segment !== -1) continue;
+                    const seedClass = allPoints[i].class;
+                    const stack = [i], segment = [];
+                    while (stack.length > 0) {
+                        const curr = stack.pop();
+                        if (allPoints[curr].segment !== -1) continue;
+                        if (!classesMatch(seedClass, allPoints[curr].class)) continue;
+                        allPoints[curr].segment = segId;
+                        segment.push(curr);
+                        for (const n of getNeighbors(curr)) {
+                            if (allPoints[n].segment === -1 && classesMatch(seedClass, allPoints[n].class)) stack.push(n);
+                        }
+                    }
+                    if (segment.length >= minPts) { segments.push(segment); segId++; }
+                }
             }
         }
 

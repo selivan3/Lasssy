@@ -57,22 +57,30 @@ classify_file() {
         -o "${TEMP_DIR}/${filename}_s3.laz" -demo
     
     # Шаг 4: Высоты + здания + растительность
-    echo "[4/5] Классификация..."
+    echo "[4/6] Высоты..."
     run_lastool "lasheight64" -i "${TEMP_DIR}/${filename}_s3.laz" \
         -o "${TEMP_DIR}/${filename}_s4.laz" -demo
     
+    # Шаг 5: Обнаружение зданий (улучшенные параметры для крыш)
+    echo "[5/6] Здания и растительность..."
     run_lastool "lasclassify64" -i "${TEMP_DIR}/${filename}_s4.laz" \
+        -planar 0.15 -ground_offset 1.5 \
         -o "${TEMP_DIR}/${filename}_s5.laz" -demo
     
+    # Шаг 6: Классификация растительности по высоте
+    # Сначала точки ниже 0м - это тоже грунт (или низкая раст.)
+    echo "[6/6] Высотная классификация..."
     run_lastool "lasheight64" -i "${TEMP_DIR}/${filename}_s5.laz" \
+        -classify_below -0.5 2 \
+        -classify_between -0.5 0.0 3 \
         -classify_between 0.0 1.0 3 \
         -classify_between 1.0 2.0 4 \
         -classify_above 2.0 5 \
         -ignore_class 2 -ignore_class 6 -ignore_class 7 \
         -o "${TEMP_DIR}/${filename}_s6.laz" -demo
     
-    # Шаг 5: ПОСТ-ОБРАБОТКА - изолированные точки в воздухе → шум
-    echo "[5/5] Пост-обработка шума..."
+    # Шаг 7: ПОСТ-ОБРАБОТКА - изолированные точки → шум
+    echo "[7/7] Пост-обработка шума..."
     run_lastool "lasnoise64" -i "${TEMP_DIR}/${filename}_s6.laz" \
         -step 1.5 -isolated 3 -classify_as 7 \
         -o "${OUTPUT_DIR}/${filename}_classified.laz" -demo
@@ -101,7 +109,7 @@ classify_file() {
 
 main() {
     echo "============================================="
-    echo "  Lasssy V4 - Classification"
+    echo "  Lasssy V4.2 - Classification + Smoothing"
     echo "============================================="
     
     detect_os
@@ -113,13 +121,30 @@ main() {
     
     mkdir -p "$OUTPUT_DIR" "$TEMP_DIR"
     
+    # Этап 1: Классификация
+    echo ""
+    echo "=== ЭТАП 1: КЛАССИФИКАЦИЯ ==="
     for xyz_file in "${INPUT_DIR}"/*.xyz; do
         classify_file "$xyz_file"
         echo ""
     done
     
     rmdir "${TEMP_DIR}" 2>/dev/null || true
-    echo "✓ Завершено!"
+    
+    # Этап 2: Сглаживание
+    echo ""
+    echo "=== ЭТАП 2: СГЛАЖИВАНИЕ ==="
+    for classified_file in "${OUTPUT_DIR}"/*_classified.xyz; do
+        if [[ -f "$classified_file" ]]; then
+            echo "Сглаживание: $(basename "$classified_file")"
+            python3 smooth_all.py "$classified_file"
+        fi
+    done
+    
+    echo ""
+    echo "✓ Завершено! Созданы файлы:"
+    echo "  - *_classified.xyz (только классификация)"
+    echo "  - *_classified_smoothed.xyz (с сглаживанием)"
 }
 
 main "$@"
