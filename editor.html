@@ -379,6 +379,42 @@
             display: block;
             background: #111;
         }
+
+        /* Минималистичный ползунок кисти */
+        #brushSlider {
+            --thumb-size: 20px;
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            outline: none;
+            margin: 15px 0;
+        }
+
+        #brushSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: var(--thumb-size, 20px);
+            height: var(--thumb-size, 20px);
+            background: #ffff00;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: none;
+            transition: width 0.05s, height 0.05s;
+        }
+
+        #brushSlider::-moz-range-thumb {
+            width: var(--thumb-size, 20px);
+            height: var(--thumb-size, 20px);
+            background: #ffff00;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: none;
+            transition: width 0.05s, height 0.05s;
+        }
     </style>
 </head>
 
@@ -395,9 +431,21 @@
 
             <div class="section">
                 <h3>Инструменты</h3>
-                <div class="toggle-group" id="toolToggle">
-                    <div class="toggle-btn active" onclick="setTool('segment')">Сегменты</div>
+                <div class="toggle-group" id="toolToggle1">
+                    <div class="toggle-btn" onclick="setTool('brush')">🖌️ Кисть</div>
                     <div class="toggle-btn" onclick="setTool('scalpel')">✂️ Скальпель</div>
+                </div>
+                <div class="toggle-group" id="toolToggle2">
+                    <div class="toggle-btn active" onclick="setTool('segment')">📦 Сегменты</div>
+                </div>
+            </div>
+
+            <div class="section" id="brushOptions" style="display: none;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 0.9em;">🖌️</span>
+                    <input type="range" id="brushSlider" min="1" max="15" step="1" value="5"
+                        onchange="updateBrushSize()" oninput="updateBrushSize()">
+                    <span id="brushSizeVal" style="color:#e94560; font-size: 0.85em; min-width: 20px;">5</span>
                 </div>
             </div>
 
@@ -414,8 +462,8 @@
                         onchange="updateSegParams()">
                 </div>
                 <div class="toggle-group" id="modeToggle">
-                    <div class="toggle-btn active" onclick="setSegMode('class')">По классу</div>
-                    <div class="toggle-btn" onclick="setSegMode('veg')">Растит.</div>
+                    <div class="toggle-btn" onclick="setSegMode('class')">По классу</div>
+                    <div class="toggle-btn active" onclick="setSegMode('veg')">Растит.</div>
                     <div class="toggle-btn" onclick="setSegMode('all')">Все</div>
                     <div class="toggle-btn" onclick="setSegMode('cluster')">Кучки</div>
                     <div class="toggle-btn" onclick="setSegMode('vground')">Верт.грунт</div>
@@ -462,6 +510,9 @@
                             onchange="updatePointSize()">
                         <span style="color:#e94560" id="ptSizeVal">0.5</span>
                     </div>
+                    <button onclick="centerCamera()"
+                        style="width:100%; margin-top:8px; padding:6px; background:#0f3460; border:1px solid #e94560; color:#e94560; border-radius:4px; cursor:pointer; font-size:0.75em;">🎯
+                        Центрировать</button>
                 </div>
             </div>
 
@@ -517,10 +568,12 @@
         let pointCloud = null, selectedIndices = new Set();
         let targetClass = 6, centerOffset = { x: 0, y: 0, z: 0 };
         let maxDisplayPoints = 200000;
-        let segMode = 'class';
+        let segMode = 'veg';
         let currentTool = 'segment';
         let isFirstLoad = true;
         let bounds = { minX: 0, maxX: 0, minY: 0, maxY: 0, minZ: 0, maxZ: 0 };
+        let currentFileName = 'edited';
+        let brushSize = 5;
 
         // Скальпель
         let scalpelActive = null;
@@ -540,11 +593,21 @@
 
         function setTool(tool) {
             currentTool = tool;
-            document.querySelectorAll('#toolToggle .toggle-btn').forEach((btn, i) => {
-                btn.classList.toggle('active', (tool === 'segment' && i === 0) || (tool === 'scalpel' && i === 1));
+            // Обновляем кнопки в первом ряду
+            document.querySelectorAll('#toolToggle1 .toggle-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', (tool === 'brush' && i === 0) || (tool === 'scalpel' && i === 1));
             });
+            // Обновляем кнопку во втором ряду
+            document.querySelectorAll('#toolToggle2 .toggle-btn').forEach((btn) => {
+                btn.classList.toggle('active', tool === 'segment');
+            });
+            // Снимаем active с первого ряда если выбраны сегменты
+            if (tool === 'segment') {
+                document.querySelectorAll('#toolToggle1 .toggle-btn').forEach(btn => btn.classList.remove('active'));
+            }
             document.getElementById('scalpel-panel').classList.toggle('show', tool === 'scalpel');
             document.getElementById('segmentOptions').style.display = tool === 'segment' ? 'block' : 'none';
+            document.getElementById('brushOptions').style.display = tool === 'brush' ? 'block' : 'none';
             onResize();
             if (tool === 'scalpel' && allPoints.length > 0) {
                 setTimeout(() => { drawAllScalpelViews(); }, 100);
@@ -556,6 +619,11 @@
             document.querySelectorAll('#modeToggle .toggle-btn').forEach((btn, i) => {
                 btn.classList.toggle('active', (mode === 'class' && i === 0) || (mode === 'veg' && i === 1) || (mode === 'all' && i === 2) || (mode === 'cluster' && i === 3) || (mode === 'vground' && i === 4));
             });
+            // Автоматически меняем радиус при переключении режима
+            if (mode === 'cluster') {
+                document.getElementById('segRadius').value = 0.5;
+                document.getElementById('segRadiusVal').textContent = '0.5';
+            }
             if (allPoints.length > 0) rebuildSegments();
         }
 
@@ -810,6 +878,15 @@
             if (pointCloud) pointCloud.material.size = size;
         }
 
+        function updateBrushSize() {
+            brushSize = parseInt(document.getElementById('brushSlider').value);
+            document.getElementById('brushSizeVal').textContent = brushSize;
+            // Меняем размер точки ползунка (от 14px до 36px)
+            const thumbSize = 14 + (brushSize - 1) * 1.5;
+            const slider = document.getElementById('brushSlider');
+            slider.style.setProperty('--thumb-size', thumbSize + 'px');
+        }
+
         function rebuildSegments() {
             if (allPoints.length === 0) return;
             buildSegments();
@@ -818,6 +895,8 @@
         function loadFile(e) {
             const file = e.target.files[0];
             if (!file) return;
+            // Сохраняем имя файла без расширения
+            currentFileName = file.name.replace(/\.(xyz|txt)$/i, '');
             document.getElementById('info').innerHTML = 'Загрузка...';
             isFirstLoad = true;
             const reader = new FileReader();
@@ -1021,7 +1100,32 @@
         }
 
         function onClick(e) {
-            if (!pointCloud || currentTool !== 'segment') return;
+            if (!pointCloud) return;
+
+            // Кисть - ручная покраска точек
+            if (currentTool === 'brush') {
+                const rect = renderer.domElement.getBoundingClientRect();
+                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObject(pointCloud);
+                if (intersects.length > 0) {
+                    // Берём до brushSize ближайших точек
+                    const pointsToPaint = Math.min(brushSize, intersects.length);
+                    if (!e.shiftKey) selectedIndices.clear();
+                    for (let i = 0; i < pointsToPaint; i++) {
+                        const displayIdx = intersects[i].index;
+                        const realIdx = displayPoints[displayIdx].idx;
+                        selectedIndices.add(realIdx);
+                    }
+                    updateColors();
+                    document.getElementById('info').innerHTML = `Кисть: <span class="highlight">${selectedIndices.size.toLocaleString()}</span> точек`;
+                }
+                return;
+            }
+
+            // Сегменты - выделение целых сегментов
+            if (currentTool !== 'segment') return;
             const rect = renderer.domElement.getBoundingClientRect();
             mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -1072,6 +1176,14 @@
             document.getElementById('info').innerHTML = 'Снято';
         }
 
+        function centerCamera() {
+            if (allPoints.length === 0) return;
+            camera.position.set(50, 50, 50);
+            controls.target.set(0, 0, 0);
+            controls.update();
+            document.getElementById('info').innerHTML = '🎯 Камера по центру';
+        }
+
         function renderClassRows() {
             const counts = {};
             for (const p of allPoints) counts[p.class] = (counts[p.class] || 0) + 1;
@@ -1097,7 +1209,7 @@
             for (const p of allPoints) content += `${p.class} ${p.x.toFixed(3)} ${p.y.toFixed(3)} ${p.z.toFixed(3)}\n`;
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([content]));
-            a.download = 'edited_classified.xyz';
+            a.download = currentFileName + '_Lassy V4.xyz';
             a.click();
         }
         // ===== ПОЛНОЭКРАННЫЙ РЕЖИМ =====
