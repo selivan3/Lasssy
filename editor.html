@@ -25,7 +25,7 @@
         }
 
         #sidebar {
-            width: 280px;
+            width: 320px;
             background: #16213e;
             padding: 15px;
             display: flex;
@@ -151,6 +151,8 @@
             font-size: 0.8em;
             max-width: 280px;
             z-index: 10;
+            overflow: hidden;
+            word-break: break-word;
         }
 
         .highlight {
@@ -485,9 +487,9 @@
             <div class="section">
                 <h3>Управление</h3>
                 <div class="hotkeys">
-                    <kbd>ЛКМ</kbd> Выделить<br>
-                    <kbd>Shift+ЛКМ</kbd> Добавить<br>
-                    <kbd>2-7</kbd> Класс | <kbd>S</kbd> Скальпель
+                    <kbd>ЛКМ</kbd> Выделить | <kbd>Shift+ЛКМ</kbd> Добавить<br>
+                    <kbd>ПКМ</kbd> Снять | <kbd>Shift+ПКМ</kbd> Вырезать<br>
+                    <kbd>2-7</kbd> Класс
                 </div>
             </div>
         </div>
@@ -495,6 +497,15 @@
         <div id="main-area">
             <div id="canvas-container">
                 <canvas id="canvas"></canvas>
+                <div id="crosshair"
+                    style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; z-index:100;">
+                    <div
+                        style="width:12px; height:2px; background:rgba(255,255,255,0.7); position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
+                    </div>
+                    <div
+                        style="width:2px; height:12px; background:rgba(255,255,255,0.7); position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
+                    </div>
+                </div>
                 <div id="info">Загрузите XYZ файл</div>
                 <div id="display-panel">
                     <h4>⚙️ Отображение</h4>
@@ -513,6 +524,9 @@
                     <button onclick="centerCamera()"
                         style="width:100%; margin-top:8px; padding:6px; background:#0f3460; border:1px solid #e94560; color:#e94560; border-radius:4px; cursor:pointer; font-size:0.75em;">🎯
                         Центрировать</button>
+                    <button id="gameBtn" onclick="toggleGameMode()"
+                        style="width:100%; margin-top:4px; padding:6px; background:#0f3460; border:1px solid #27ae60; color:#27ae60; border-radius:4px; cursor:pointer; font-size:0.75em;">🎮
+                        Игра</button>
                 </div>
             </div>
 
@@ -586,6 +600,17 @@
         let fsIsPanning = false;
         let fsPanStart = { x: 0, y: 0 };
 
+        // Игровой режим (Minecraft-style)
+        let gameMode = false;
+        let gameKeys = { w: false, a: false, s: false, d: false, space: false, shift: false };
+        let gameYaw = 0, gamePitch = 0;
+        let gameVelocityY = 0;
+        let gamePlayerPos = { x: 0, y: 10, z: 0 };
+        const GAME_SPEED = 0.5;
+        const GAME_JUMP = 0.8;
+        const GAME_GRAVITY = 0.03;
+        const GAME_MOUSE_SENS = 0.002;
+
         const classColors = { 1: 0xffffff, 2: 0x8B4513, 3: 0x90EE90, 4: 0x32CD32, 5: 0x006400, 6: 0xFF6347, 7: 0x808080 };
         const classNames = { 2: 'Грунт', 3: 'Низкая', 4: 'Средняя', 5: 'Высокая', 6: 'Здания', 7: 'Шум' };
         const vegClasses = [3, 4, 5];
@@ -645,6 +670,7 @@
             window.addEventListener('resize', onResize);
             document.getElementById('fileInput').addEventListener('change', loadFile);
             document.getElementById('canvas').addEventListener('click', onClick);
+            document.getElementById('canvas').addEventListener('contextmenu', onRightClick);
             document.addEventListener('keydown', onKeyDown);
 
             // Скальпель события
@@ -849,7 +875,11 @@
 
         function animate() {
             requestAnimationFrame(animate);
-            controls.update();
+            if (gameMode) {
+                updateGameMode();
+            } else {
+                controls.update();
+            }
             renderer.render(scene, camera);
         }
 
@@ -1099,8 +1129,37 @@
             }
         }
 
+        function onRightClick(e) {
+            e.preventDefault();
+            if (gameMode) return;
+            if (!pointCloud) return;
+
+            if (e.shiftKey) {
+                // Shift+ПКМ - вырезать (убрать из выделения кликнутый сегмент)
+                const rect = renderer.domElement.getBoundingClientRect();
+                mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObject(pointCloud);
+                if (intersects.length > 0) {
+                    const displayIdx = intersects[0].index;
+                    const realIdx = displayPoints[displayIdx].idx;
+                    const segId = allPoints[realIdx].segment;
+                    if (segId >= 0 && segments[segId]) {
+                        for (const i of segments[segId]) selectedIndices.delete(i);
+                        updateColors();
+                        document.getElementById('info').innerHTML = `Вырезано. Осталось: <span class="highlight">${selectedIndices.size.toLocaleString()}</span>`;
+                    }
+                }
+            } else {
+                // ПКМ - снять всё выделение
+                clearSelection();
+            }
+        }
+
         function onClick(e) {
             if (!pointCloud) return;
+            if (gameMode) return; // В игровом режиме не выделяем
 
             // Кисть - ручная покраска точек
             if (currentTool === 'brush') {
@@ -1178,7 +1237,7 @@
 
         function centerCamera() {
             if (allPoints.length === 0) return;
-            camera.position.set(50, 50, 50);
+            camera.position.set(100, 100, 100);
             controls.target.set(0, 0, 0);
             controls.update();
             document.getElementById('info').innerHTML = '🎯 Камера по центру';
@@ -1195,12 +1254,10 @@
         }
 
         function onKeyDown(e) {
+            if (gameMode) return; // В игровом режиме не обрабатываем
             if (e.key >= '2' && e.key <= '7') setTargetClass(parseInt(e.key));
             else if (e.key === 'Enter') applyClass();
             else if (e.key === 'Escape') clearSelection();
-            else if (e.key === 's' || e.key === 'S' || e.key === 'ы' || e.key === 'Ы') {
-                setTool(currentTool === 'scalpel' ? 'segment' : 'scalpel');
-            }
         }
 
         function saveFile() {
@@ -1468,10 +1525,224 @@
             ctx.fillText('🖱️ Рисовать | Ctrl+🖱️ Двигать | Колёсико: Зум', 10, h - 10);
         }
 
+        // ===== ИГРОВОЙ РЕЖИМ (Minecraft-style) =====
+        function toggleGameMode() {
+            if (allPoints.length === 0) {
+                document.getElementById('info').innerHTML = 'Сначала загрузите файл!';
+                return;
+            }
+
+            gameMode = !gameMode;
+            const btn = document.getElementById('gameBtn');
+
+            if (gameMode) {
+                // Входим в игровой режим
+                controls.enabled = false;
+
+                // Широкоугольный обзор
+                camera.fov = 90;
+                camera.updateProjectionMatrix();
+
+                // Позиционируем игрока в центре датасета, чуть выше
+                gamePlayerPos.x = 0;
+                gamePlayerPos.y = 10;
+                gamePlayerPos.z = 0;
+                gameYaw = 0;
+                gamePitch = 0;
+                gameVelocityY = 0;
+
+                // Захватываем мышь
+                renderer.domElement.requestPointerLock();
+
+                // Скрываем меню - полноэкранный режим
+                document.getElementById('sidebar').style.display = 'none';
+                document.getElementById('display-panel').style.display = 'none';
+                document.getElementById('info').style.display = 'none';
+                document.getElementById('crosshair').style.display = 'block';
+                onResize();
+
+                btn.style.background = '#27ae60';
+                btn.style.color = 'white';
+                btn.innerHTML = '🎮 Выход (Esc)';
+
+                // Добавляем слушатели
+                document.addEventListener('mousemove', onGameMouseMove);
+                document.addEventListener('keydown', onGameKeyDown);
+                document.addEventListener('keyup', onGameKeyUp);
+            } else {
+                exitGameMode();
+            }
+        }
+
+        function exitGameMode() {
+            gameMode = false;
+            controls.enabled = true;
+
+            // Возвращаем обычный обзор
+            camera.fov = 60;
+            camera.updateProjectionMatrix();
+
+            const btn = document.getElementById('gameBtn');
+            btn.style.background = '#0f3460';
+            btn.style.color = '#27ae60';
+            btn.innerHTML = '🎮 Игра';
+
+            document.exitPointerLock();
+
+            // Убираем слушатели
+            document.removeEventListener('mousemove', onGameMouseMove);
+            document.removeEventListener('keydown', onGameKeyDown);
+            document.removeEventListener('keyup', onGameKeyUp);
+
+            // Сбрасываем клавиши
+            gameKeys = { w: false, a: false, s: false, d: false, space: false, shift: false };
+
+            // Возвращаем меню
+            document.getElementById('sidebar').style.display = 'flex';
+            document.getElementById('display-panel').style.display = 'block';
+            document.getElementById('info').style.display = 'block';
+            document.getElementById('crosshair').style.display = 'none';
+            onResize();
+
+            document.getElementById('info').innerHTML = 'Режим редактирования';
+        }
+
+        function onGameMouseMove(e) {
+            if (!gameMode || document.pointerLockElement !== renderer.domElement) return;
+
+            gameYaw -= e.movementX * GAME_MOUSE_SENS;
+            gamePitch -= e.movementY * GAME_MOUSE_SENS;
+            gamePitch = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, gamePitch));
+        }
+
+        function onGameKeyDown(e) {
+            if (!gameMode) return;
+
+            switch (e.key.toLowerCase()) {
+                case 'w': case 'ц': gameKeys.w = true; break;
+                case 'a': case 'ф': gameKeys.a = true; break;
+                case 's': case 'ы': gameKeys.s = true; break;
+                case 'd': case 'в': gameKeys.d = true; break;
+                case ' ': gameKeys.space = true; e.preventDefault(); break;
+                case 'shift': gameKeys.shift = true; break;
+                case 'escape': exitGameMode(); break;
+            }
+        }
+
+        function onGameKeyUp(e) {
+            if (!gameMode) return;
+
+            switch (e.key.toLowerCase()) {
+                case 'w': case 'ц': gameKeys.w = false; break;
+                case 'a': case 'ф': gameKeys.a = false; break;
+                case 's': case 'ы': gameKeys.s = false; break;
+                case 'd': case 'в': gameKeys.d = false; break;
+                case ' ': gameKeys.space = false; break;
+                case 'shift': gameKeys.shift = false; break;
+            }
+        }
+
+        // Определяем высоту земли под игроком (ищем самую высокую точку рядом)
+        function getGroundHeight(px, pz) {
+            if (allPoints.length === 0) return 0;
+
+            const searchRadius = 2; // Радиус поиска точек
+            let maxHeight = -Infinity;
+            let foundPoint = false;
+
+            // Преобразуем координаты игрока обратно в координаты датасета
+            const worldX = px + centerOffset.x;
+            const worldY = pz + centerOffset.y; // В Three.js Z -> Y датасета
+
+            for (let i = 0; i < allPoints.length; i++) {
+                const p = allPoints[i];
+
+                // Пропускаем шум (класс 7)
+                if (p.class === 7) continue;
+
+                const dx = p.x - worldX;
+                const dy = p.y - worldY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist <= searchRadius) {
+                    if (p.z > maxHeight) {
+                        maxHeight = p.z;
+                        foundPoint = true;
+                    }
+                }
+            }
+
+            // Если нашли точки - возвращаем высоту, иначе минимальную
+            return foundPoint ? maxHeight : 0;
+        }
+
+        function updateGameMode() {
+            if (!gameMode) return;
+
+            const speed = gameKeys.shift ? GAME_SPEED * 2 : GAME_SPEED;
+
+            // Направление камеры (горизонтальное)
+            const dirX = Math.sin(gameYaw);
+            const dirZ = Math.cos(gameYaw);
+
+            // Движение
+            if (gameKeys.w) {
+                gamePlayerPos.x += dirX * speed;
+                gamePlayerPos.z += dirZ * speed;
+            }
+            if (gameKeys.s) {
+                gamePlayerPos.x -= dirX * speed;
+                gamePlayerPos.z -= dirZ * speed;
+            }
+            if (gameKeys.a) {
+                gamePlayerPos.x += dirZ * speed;
+                gamePlayerPos.z -= dirX * speed;
+            }
+            if (gameKeys.d) {
+                gamePlayerPos.x -= dirZ * speed;
+                gamePlayerPos.z += dirX * speed;
+            }
+
+            // Прыжок и гравитация
+            const groundHeight = getGroundHeight(gamePlayerPos.x, gamePlayerPos.z);
+            const playerHeight = 10; // Высота глаз над землёй
+            const targetY = groundHeight + playerHeight;
+
+            if (gameKeys.space && Math.abs(gamePlayerPos.y - targetY) < 1) {
+                gameVelocityY = GAME_JUMP;
+            }
+
+            gameVelocityY -= GAME_GRAVITY;
+            gamePlayerPos.y += gameVelocityY;
+
+            // Не падать ниже поверхности точек
+            if (gamePlayerPos.y < targetY) {
+                gamePlayerPos.y = targetY;
+                gameVelocityY = 0;
+            }
+
+            // Обновляем камеру
+            camera.position.set(gamePlayerPos.x, gamePlayerPos.y, gamePlayerPos.z);
+
+            // Направление взгляда
+            const lookX = gamePlayerPos.x + Math.sin(gameYaw) * Math.cos(gamePitch);
+            const lookY = gamePlayerPos.y + Math.sin(gamePitch);
+            const lookZ = gamePlayerPos.z + Math.cos(gameYaw) * Math.cos(gamePitch);
+
+            camera.lookAt(lookX, lookY, lookZ);
+        }
+
         // Закрытие по Escape
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape' && fullscreenPlane) {
                 closeFullscreen();
+            }
+        });
+
+        // Выход из pointer lock = выход из игры
+        document.addEventListener('pointerlockchange', function () {
+            if (gameMode && document.pointerLockElement !== renderer.domElement) {
+                exitGameMode();
             }
         });
 
